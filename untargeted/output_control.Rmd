@@ -32,9 +32,9 @@ identifier = "neg"   #Either the same as polarity (pos/neg) or "cyano"
 exp.num = 1 # Either 1 or 2
 # Create a folder to hold the output
 if(exp.num ==2){ 
-  output_folder <- paste0("output_folder_", identifier, "/")
+  output_folder <- paste0("untargeted/output_folder_", identifier, "/")
 } else {
-  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")
+  output_folder <- paste0("untargeted/output_folder_", identifier,"_","exp",exp.num, "/")
 }
 
 # Point to the raw mzXML files
