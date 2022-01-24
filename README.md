@@ -32,6 +32,8 @@ Peaklists:
 
 The targeted subdirectory contains two sub-folders, one for the GBT *uptake* experiments run on the TQS triple-quad and the other for the GBT *fate* analysis run on the QE HF Orbitrap.
 
+
+
 ### Untargeted analysis
 
 The untargeted subdirectory contains a pipeline that accepts as input the mzXML files downloaded above and will produce several outputs.
