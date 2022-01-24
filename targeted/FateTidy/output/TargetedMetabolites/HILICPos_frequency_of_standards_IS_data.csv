@@ -1,0 +1,106 @@
+Protein Name,Precursor Ion Name,Experiment,n
+(3-Carboxypropyl)trimethylammonium,(3-Carboxypropyl)trimethylammonium_13C-0 15N-0,Fate1,21
+(3-Carboxypropyl)trimethylammonium,(3-Carboxypropyl)trimethylammonium_13C-0 15N-0,Fate2,18
+Adenine,Adenine_13C-0 15N-0,Fate1,21
+Adenine,Adenine_13C-0 15N-0,Fate2,18
+Adenosine,Adenosine_13C-0 15N-0,Fate1,21
+Adenosine,Adenosine_13C-0 15N-0,Fate2,18
+Asparagine,Asparagine_13C-0 15N-0,Fate1,21
+Asparagine,Asparagine_13C-0 15N-0,Fate2,18
+Aspartic acid,Aspartic acid_13C-0 15N-0,Fate1,21
+Aspartic acid,Aspartic acid_13C-0 15N-0,Fate2,18
+beta-Alanine,beta-Alanine_13C-0 15N-0,Fate1,21
+beta-Alanine,beta-Alanine_13C-0 15N-0,Fate2,15
+beta-Alaninebetaine,beta-Alaninebetaine_13C-0 15N-0,Fate1,21
+beta-Alaninebetaine,beta-Alaninebetaine_13C-0 15N-0,Fate2,18
+Betonicine,Betonicine_13C-0 15N-0,Fate1,21
+Betonicine,Betonicine_13C-0 15N-0,Fate2,3
+Carnitine,Carnitine_13C-0 15N-0,Fate1,21
+Carnitine,Carnitine_13C-0 15N-0,Fate2,18
+Choline,Choline_13C-0 15N-0,Fate1,21
+Choline,Choline_13C-0 15N-0,Fate2,18
+Creatine,Creatine_13C-0 15N-0,Fate1,21
+Creatine,Creatine_13C-0 15N-0,Fate2,18
+Cytosine,Cytosine_13C-0 15N-0,Fate1,21
+Cytosine,Cytosine_13C-0 15N-0,Fate2,18
+Deoxyadenosine,Deoxyadenosine_13C-0 15N-0,Fate1,21
+Deoxyadenosine,Deoxyadenosine_13C-0 15N-0,Fate2,18
+DMSP,Dimethylsulfoniopropionate_13C-0,Fate1,21
+DMSP,Dimethylsulfoniopropionate_13C-0,Fate2,18
+Glucosylglycerol,2-O-alpha-D-Glucosylglycerol_13C-0,Fate1,21
+Glucosylglycerol,2-O-alpha-D-Glucosylglycerol_13C-0,Fate2,18
+Glycerophosphocholine,Glycerophosphocholine_13C-0 15N-0,Fate1,21
+Glycerophosphocholine,Glycerophosphocholine_13C-0 15N-0,Fate2,18
+Glycine,Glycine_13C-0 15N-0,Fate1,21
+Glycine,Glycine_13C-0 15N-0,Fate2,17
+Glycine betaine,Glycine betaine_13C-0 15N-0,Fate1,21
+Glycine betaine,Glycine betaine_13C-0 15N-0,Fate2,18
+Gonyol,Gonyol_13C-0,Fate1,21
+Gonyol,Gonyol_13C-0,Fate2,18
+Guanine,Guanine_13C-0 15N-0,Fate1,21
+Guanine,Guanine_13C-0 15N-0,Fate2,18
+Guanosine,Guanosine_13C-0 15N-0,Fate1,21
+Guanosine,Guanosine_13C-0 15N-0,Fate2,18
+Homarine,Homarine_13C-0 15N-0,Fate1,21
+Homarine,Homarine_13C-0 15N-0,Fate2,18
+Hypoxanthine,Hypoxanthine_13C-0 15N-0,Fate1,21
+Hypoxanthine,Hypoxanthine_13C-0 15N-0,Fate2,18
+Internal Standards,"Adenine, 15N2",Fate1,21
+Internal Standards,"Adenine, 15N2",Fate2,18
+Internal Standards,"Arsenobetaine, 13C2",Fate1,21
+Internal Standards,"Arsenobetaine, 13C2",Fate2,18
+Internal Standards,"Betaine, 13C5-15N",Fate1,21
+Internal Standards,"Betaine, 13C5-15N",Fate2,18
+Internal Standards,"Cytosine, 13C2-15N3",Fate1,21
+Internal Standards,"Cytosine, 13C2-15N3",Fate2,18
+Internal Standards,"DL-Alanine, D3",Fate1,21
+Internal Standards,"DL-Alanine, D3",Fate2,18
+Internal Standards,"DL-Histidine, 15N",Fate1,21
+Internal Standards,"DL-Histidine, 15N",Fate2,18
+Internal Standards,"DL-Proline, D7",Fate1,21
+Internal Standards,"DL-Proline, D7",Fate2,18
+Internal Standards,"DL-Valine, D8",Fate1,21
+Internal Standards,"DL-Valine, D8",Fate2,18
+Internal Standards,"Guanine, 13C-15N2",Fate1,21
+Internal Standards,"Guanine, 13C-15N2",Fate2,18
+Internal Standards,"L-Isoleucine, 15N",Fate1,21
+Internal Standards,"L-Isoleucine, 15N",Fate2,18
+Internal Standards,"L-Methionine, D3",Fate1,21
+Internal Standards,"L-Methionine, D3",Fate2,18
+L-Alanine,L-Alanine_13C-0 15N-0,Fate1,21
+L-Alanine,L-Alanine_13C-0 15N-0,Fate2,18
+L-Arginine,L-Arginine_13C-0 15N-0,Fate1,21
+L-Arginine,L-Arginine_13C-0 15N-0,Fate2,18
+L-Glutamic acid,L-Glutamic acid_13C-0 15N-0,Fate1,21
+L-Glutamic acid,L-Glutamic acid_13C-0 15N-0,Fate2,18
+L-Glutamine,L-Glutamine_13C-0 15N-0,Fate1,21
+L-Glutamine,L-Glutamine_13C-0 15N-0,Fate2,18
+L-Histidine,L-Histidine_13C-0 15N-0,Fate1,13
+L-Histidine,L-Histidine_13C-0 15N-0,Fate2,13
+L-Isoleucine,L-Isoleucine_13C-0 15N-0,Fate1,19
+L-Isoleucine,L-Isoleucine_13C-0 15N-0,Fate2,17
+L-Leucine,L-Leucine_13C-0 15N-0,Fate1,21
+L-Leucine,L-Leucine_13C-0 15N-0,Fate2,18
+L-Methionine,L-Methionine_13C-0 15N-0,Fate1,21
+L-Methionine,L-Methionine_13C-0 15N-0,Fate2,18
+L-Proline,L-Proline_13C-0 15N-0,Fate1,21
+L-Proline,L-Proline_13C-0 15N-0,Fate2,18
+L-Tyrosine,L-Tyrosine_13C-0 15N-0,Fate1,20
+L-Tyrosine,L-Tyrosine_13C-0 15N-0,Fate2,16
+Melamine,Melamine_13C-0 15N-0,Fate1,1
+O-Acetylcarnitine,O-Acetylcarnitine_13C-0 15N-0,Fate1,21
+O-Acetylcarnitine,O-Acetylcarnitine_13C-0 15N-0,Fate2,18
+Proline betaine,Proline betaine_13C-0 15N-0,Fate1,21
+Proline betaine,Proline betaine_13C-0 15N-0,Fate2,18
+S-Farnesyl-L-cysteine methyl ester,S-Farnesyl-L-cysteine methyl ester_13C-0 15N-0,Fate1,2
+S-Farnesyl-L-cysteine methyl ester,S-Farnesyl-L-cysteine methyl ester_13C-0 15N-0,Fate2,1
+Sarcosine,Sarcosine_13C-0 15N-0,Fate1,21
+Sarcosine,Sarcosine_13C-0 15N-0,Fate2,15
+Serine,Serine_13C-0 15N-0,Fate1,3
+Serine,Serine_13C-0 15N-0,Fate2,1
+Taurine,Taurine_13C-0 15N-0,Fate1,21
+Taurine,Taurine_13C-0 15N-0,Fate2,18
+Trigonelline,Trigonelline_13C-0 15N-0,Fate1,21
+Trigonelline,Trigonelline_13C-0 15N-0,Fate2,18
+Trimethylamine N-oxide,Trimethylamine N-oxide_13C-0 15N-0,Fate1,21
+Trimethylamine N-oxide,Trimethylamine N-oxide_13C-0 15N-0,Fate2,18

@@ -1,0 +1,459 @@
+---
+title: "CyanoAq_skyline_BMIS"
+author: "Angie Boysen"
+date: "Nov 03, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyr)
+require(graphics); require(grDevices)
+library(Hmisc)
+library(gtools)
+library(cowplot)
+require(RColorBrewer)
+library(readr)
+library(plotly)
+library(stringr)
+library(GGally)
+library(dplyr)
+require(readr)
+library(lattice)
+library(stats)
+library(scales)
+```
+
+## Import Data
+Data should have been exported as "alignement results" area
+```{r importdata, message=FALSE, warning=FALSE}
+
+column.id = "CyanoAq"
+filename <- "../output/TargetedMetabolites/CyanoAq_QC_skyline_IS_data.csv"
+dat <- read_csv(filename) %>%
+  filter(!grepl("-pos",`Replicate Name`))
+
+IS <- dat %>%
+  filter(`Protein Name` == "Internal Standards"|
+           `Protein Name` == "Internal standards_pos"|
+          `Protein Name` == "Internal Standards_neg"
+          )
+glimpse(IS)
+```
+
+## basic QC
+just ditch anything that doesn't have a perfect score in the flags
+```{r basic QC, echo=FALSE, message=FALSE, warning=FALSE}
+filtered.dat <- dat %>%
+  filter(all.flags=="all ok" | is.na(all.flags))
+```
+
+## Read in Internal Standard data, add in injec_volume data from Sample Key
+```{r Output a summery of filtered results, echo=FALSE, message=FALSE, warning=FALSE}
+IS.dat <- IS %>%
+  select(`Replicate Name`, `Precursor Ion Name`, Area) %>%
+  dplyr::rename(MassFeature = `Precursor Ion Name`) %>%
+  mutate(Area = as.numeric(Area),
+         MassFeature = paste(MassFeature, "- IS"))
+
+SampKey <- read_csv("../RawData/Cyano Sample List.csv") %>%
+  filter(`Replicate Name` %in% IS.dat$`Replicate Name`) %>%
+  select(`Replicate Name`, dilution) %>%
+  filter(!is.na(dilution))%>%
+  mutate(MassFeature = "Dil.Factor",
+         Area = dilution) %>%
+  select(`Replicate Name`, Area, MassFeature)
+
+IS.dat <- rbind(IS.dat, SampKey)
+glimpse(IS.dat)
+```
+
+Look at extraction replication of the Internal Standards If things don't look good with some IS or certain samples, make sure to fix them or at least not include them as possibilities for normalization
+```{r glimpse IS, message=FALSE, warning=FALSE}
+ggplot(IS.dat %>% 
+         filter(!grepl("Std",`Replicate Name`)),
+                       # !grepl("-pos",`Replicate Name`)),
+       aes(x=`Replicate Name`, y=Area)) + 
+  geom_bar(stat="identity") + 
+  facet_wrap( ~MassFeature, scales="free_y")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5, size = 5), 
+        axis.text.y = element_text(size = 7),
+        legend.position = "top",
+        strip.text = element_text(size = 7))+
+  ggtitle("IS Raw Areas")
+```
+
+Edit IS data if necessary Optional if there are certain IS that aren't trustworthy
+Take out GBT here because that was added to the incubations
+```{r Edit IS data, message=FALSE, warning=FALSE}
+IS.dat <- IS.dat %>%
+  filter (MassFeature != "Betaine, 13C5-15N - IS") %>%
+  filter(MassFeature != "Alpha-Tocopherol, D6 - IS",
+         MassFeature != "Arachiodonic Acid, D8 - IS",
+         MassFeature != "Docosahexaenoic Acid, D5 - IS",
+         MassFeature != "Eicosapentaenoic Acid, D5 - IS")# %>%
+  # filter (MassFeature != "Heavy Succinic Acid")%>%
+  # filter (MassFeature != "DL-Histidine, 15N")
+```
+
+##Get untargeted data into long format
+```{r make data long format, message=FALSE, warning=FALSE}
+IS.dat <- IS.dat 
+replicates <- unique(IS.dat$`Replicate Name`) #Only use this if you have numbers at the beginning of runs
+
+filtered.dat.long <- filtered.dat %>%
+  rename(MassFeature = `Precursor Ion Name`) %>%
+  filter(`Replicate Name` %in% replicates) %>%
+  dplyr::select(MassFeature, `Replicate Name`, Area)
+glimpse(filtered.dat.long)
+```
+#Rename Runs - optional chunk to adjust the naming of individual runs ##EDIT This if your names do not follow the exact structure Name structure must be: Date_type_ID_replicate
+```{r, message=FALSE, warning=FALSE}
+# filtered.dat.long <- filtered.dat.long %>%
+#   mutate(`Replicate Name` = `Replicate Name` %>%
+#             str_replace("_Blk_Blk_M","_Blk_M")%>%
+#             str_replace("ExtractsFull_","Extracts_Full")%>%
+#            str_replace("ExtractsHalf_","Extracts_Half"))
+
+# IS.dat <- IS.dat %>%
+#   mutate(`Replicate Name` = `Replicate Name` %>%
+#            str_replace("17","X17") %>%
+#             str_replace("_Blk_Blk_M","_Blk_M")%>%
+#            str_replace("ExtractsFull_","Extracts_Full")%>%
+#            str_replace("ExtractsHalf_","Extracts_Half"))
+
+print(unique(filtered.dat.long$`Replicate Name`))
+```
+
+#Calculate mean values for each IS
+```{r get mean values for IS, message=FALSE, warning=FALSE}
+IS.means <- IS.dat %>%
+  filter(!grepl("_Blk", `Replicate Name`)) %>%
+    filter(!grepl("_Std", `Replicate Name`),
+           !grepl("QC2",`Replicate Name`)) %>%
+  mutate(MassFeature = as.factor(MassFeature))%>%
+     group_by(MassFeature) %>%
+     summarise(ave = mean(Area)) %>%
+  mutate(ave = ifelse(MassFeature=="Dil.Factor",1,ave))
+head(IS.means)
+write_csv(IS.means, paste0("../output/TargetedMetabolites/",column.id, "_IS Means.csv"))
+```
+
+#Normalize to each internal Standard 
+Actually scaling/adjusting by dividing by IS peak area and multiplying by the average IS peak area. Output is a dataframe 'area.norm' that has each peak adjusted to each possible internal standards
+```{r do the normalization, message=FALSE, warning=FALSE}
+binded <- rbind(IS.dat, filtered.dat.long) %>%
+  unique()
+wArea<- binded %>% 
+     select(`Replicate Name`, MassFeature, Area) %>%
+     spread(key=MassFeature, value=Area) %>%
+     as.data.frame
+
+IS.list <- unique(IS.dat$MassFeature)
+this.IS <- IS.list[1]
+area.norm <- wArea[,-1] %>% 
+          sapply(FUN = function(x) x/wArea[,grep(this.IS,
+                                                 names(wArea))]) %>%
+          as_data_frame %>% mutate(`Replicate Name` = wArea$`Replicate Name`) %>%
+          gather(MassFeature,Area_Norm, -`Replicate Name`)
+this.mean <- IS.means %>% filter(MassFeature==this.IS) %>% 
+     select(ave) %>% as.numeric
+area.norm <- area.norm %>% mutate(Area_Norm = Area_Norm*this.mean)
+key <- ncol(area.norm)
+count <- length(which(!is.na(area.norm$Area_Norm)))/
+               length(unique(area.norm$`Replicate Name`))
+names(area.norm)[key] <- paste(this.IS,"Norm.Area",sep=".")
+print(paste(1, this.IS, count, sep="-"))
+for (i in 2:length(IS.list)){
+     this.IS <- IS.list[i]
+     if(length(wArea[,grep(this.IS, names(wArea))])!=0){
+          this.norm <- wArea[,-1] %>% 
+               sapply(FUN = function(x) x/wArea[,grep(this.IS,
+                                                      names(wArea))]) %>%
+               as_data_frame %>% 
+               mutate(`Replicate Name` = wArea$`Replicate Name`) %>%
+               gather(MassFeature,Area_Norm, -`Replicate Name`)
+          this.mean <- IS.means %>% filter(MassFeature==this.IS) %>% 
+               select(ave) %>% as.numeric
+          this.norm <- this.norm %>% mutate(Area_Norm = Area_Norm*this.mean)
+          key <- ncol(area.norm)
+          area.norm[,key+1] <- this.norm$Area_Norm
+          names(area.norm)[key+1] <- paste(this.IS,"Norm.Area",sep=".")
+          count <- length(which(!is.na(this.norm$Area_Norm)))/
+               length(unique(this.norm$`Replicate Name`))
+          print(paste(i, this.IS, count, sep="-"))
+     }
+}
+glimpse(area.norm)
+```
+
+## break up the names
+```{r, message=FALSE, warning=FALSE}
+mydata_new <- area.norm %>% separate(`Replicate Name`, 
+                                      c("runDate",
+                                        "type","SampID","replicate"),"_") %>%
+     mutate(Run.Cmpd = paste(area.norm$`Replicate Name`,area.norm$MassFeature))
+binded <- binded %>% mutate(Run.Cmpd = paste(`Replicate Name`, MassFeature))
+
+dat <- full_join(binded, mydata_new)
+print(dat %>% select(runDate:replicate) %>% unique)
+```
+#Make a list of the internal standards, - the MIS, and RSD of pooled, RSD of smp for that
+## curretnly set to use true pooled sample
+```{r, message=FALSE, warning=FALSE}
+cut.off <- 0.25
+
+dat2 <- dat %>%
+  filter(MassFeature %in% IS.dat$MassFeature,
+         MassFeature != "Dil.Factor") %>%
+  select(-(`Replicate Name`:Area))  %>%
+  select(-(runDate:replicate)) %>%
+  gather(key = "MIS", value = "Adjusted_Area", factor_key = TRUE, -Run.Cmpd) %>%
+  left_join(dat %>% select(type, MassFeature, SampID, Run.Cmpd)) %>%
+  mutate(Adjusted_Area = as.numeric(Adjusted_Area))
+
+smpdat <- dat2 %>%
+  filter(type == "Smp")%>%
+  group_by(MassFeature, MIS) %>%
+  summarise(RSD_ofSmp = sd(Adjusted_Area, na.rm = T)/mean(Adjusted_Area, na.rm = T))
+
+
+TruePooGBTDat <- dat2 %>%
+  filter(type == "Poo",
+         SampID == "TruePooGBT") %>%
+  group_by(MassFeature, MIS) %>%
+  summarise(RSD_ofPoo = sd(Adjusted_Area, na.rm = T)/mean(Adjusted_Area, na.rm = T))
+
+alldat <-   full_join(smpdat, TruePooGBTDat)
+
+injectONlY <- alldat %>%
+  filter(MIS == "Dil.Factor.Norm.Area" ) %>%
+  mutate(Orig_RSD = RSD_ofPoo)%>%
+  select(-RSD_ofSmp, -RSD_ofPoo, -MIS)
+
+injectONlY_toPlot <- alldat %>%
+  filter(MIS == "Dil.Factor.Norm.Area" ) 
+
+newalldat <- left_join(alldat, injectONlY) %>%
+  mutate(del_RSD = ( Orig_RSD - RSD_ofPoo),
+         percRSD = del_RSD/Orig_RSD) %>%
+  mutate(accept_MIS = (percRSD > cut.off)) #%>%
+  # filter(MIS != "Acetyl CoA.Norm.Area")
+
+# write.csv(newalldat,  paste0("../../output/skyline/",column.id,"_IS_testResults.csv"))
+
+g <- ggplot()+
+  geom_point(dat = newalldat, shape = 21, color = "black", size = 2,aes(x = RSD_ofPoo, y = RSD_ofSmp, fill = accept_MIS))+ 
+  scale_fill_manual(values=c("white","dark gray"))+
+  geom_point(dat = injectONlY_toPlot, aes(x = RSD_ofPoo, y = RSD_ofSmp), size = 3) +
+  facet_wrap(~ MassFeature)
+g
+
+# ggsave(paste0("../../output/skyline/",column.id,"_IS_experiment_wPool.pdf"), plot = g, device = "pdf", width = 10, height = 10, units = "in")
+```
+
+#Make a summary of which internal standards were conidsterd "Acceptable" and "Best" Matching Internal Standards
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+#Makes data Long
+longdat <- dat %>%
+  filter(MassFeature != "Dil.Factor") %>%
+   select(-(`Replicate Name`:Area))   %>%
+  select(-(runDate:replicate)) %>%
+  gather(key = "MIS", value = "Adjusted_Area", factor_key = TRUE, -Run.Cmpd) %>%
+  left_join(dat %>% select(SampID, type, MassFeature, Run.Cmpd)) %>%
+  mutate(Adjusted_Area = as.numeric(Adjusted_Area))
+
+#Look only the Pooled samples, to get a lowest RSD of the pooled possible (RSD_ofPoo), then choose which IS reduces the RSD the most (Poo.Picked.IS)
+poodat <- longdat %>%
+  filter(type == "Poo",
+         SampID == "TruePooGBT") %>%
+  group_by(MassFeature, MIS) %>%
+  summarise(RSD_ofPoo =  sd(Adjusted_Area, na.rm = T)/mean(Adjusted_Area, na.rm = T))
+
+poodat <- poodat %>% left_join(poodat %>%
+                                 group_by(MassFeature) %>%
+                                 summarise(Poo.Picked.IS = unique(MIS)[which.min(RSD_ofPoo)][1]))
+
+#Get the starting point of the RSD (Orig_RSD), calculate the change in the RSD, say if the MIS is acceptable
+newpoodat <- left_join(poodat, poodat %>%
+                         filter(MIS == "Dil.Factor.Norm.Area" ) %>%
+                         mutate(Orig_RSD = RSD_ofPoo) %>%
+                         select(-RSD_ofPoo, -MIS)) %>%
+  mutate(del_RSD = (Orig_RSD - RSD_ofPoo)) %>%
+  mutate(percentChange = del_RSD/Orig_RSD) %>%
+  mutate(accept_MIS = (percentChange > cut.off & Orig_RSD > 0.1))  #HERE IS WHERE WE NEED TO DEFINE WHAT MAKES AND ACCEPTABLE MATCHED INTERNAL STANDARD
+
+#Change the BMIS to "Dil.Factor.Norm.Area" if the BMIS is not an acceptable - Adds a column that has the BMIS, not just Poo.picked.IS
+NoAMIS_newpoodat_BMIS <- newpoodat %>%
+  filter(MIS == Poo.Picked.IS) %>% #Pulling out just the pooplus is matches
+  filter(accept_MIS == "FALSE") %>%
+  mutate(FinalBMIS = "Dil.Factor.Norm.Area") 
+
+newpoodat_BMIS <- newpoodat %>%
+              filter(MIS == Poo.Picked.IS) %>% 
+              filter(accept_MIS == "TRUE") %>%
+              mutate(FinalBMIS = Poo.Picked.IS) %>%
+  bind_rows(NoAMIS_newpoodat_BMIS)
+
+#Makes the full dataset from the fixed ones (where there is no AMIS)
+FullDat_fixed <- left_join(newpoodat, newpoodat_BMIS %>%
+                        select(MassFeature, FinalBMIS)) %>%
+  filter(!is.na(accept_MIS))
+FullDat_fixed <- FullDat_fixed %>% left_join(FullDat_fixed %>%
+              filter(FinalBMIS == MIS) %>%
+              mutate(FinalRSD = RSD_ofPoo) %>%
+              select(MassFeature, FinalRSD))
+
+#Only get MFs with FinalRSD < 0.2
+Good_MFs <- FullDat_fixed %>%
+  filter(MIS == Poo.Picked.IS) %>%
+  filter(FinalRSD < 0.2)
+
+#Get number of mass features
+MassFeatures <- length(Good_MFs$MassFeature)
+print("Total mass features")
+print(MassFeatures)
+
+ #This will give us the number of mass features that were picked as a BMIS for each IS
+BMIS_percent <- Good_MFs %>%
+  filter(FinalBMIS != "Dil.Factor.Norm.Area") %>%
+  group_by(FinalBMIS) %>%
+  summarise(MFs = n()) %>%
+  mutate(PercentofBMIS = MFs/MassFeatures)  
+
+BMIS_Summary2 <- Good_MFs %>%
+  filter(FinalBMIS != "Dil.Factor.Norm.Area")
+MassFeatures2 <- length(BMIS_Summary2$MassFeature)
+print("Mass features with BMIS")
+print(MassFeatures2)
+
+
+#This will give us the number of mass features that were picked as an AMIS for each IS
+AMIS_percent <- FullDat_fixed %>%
+  filter(MassFeature %in% Good_MFs$MassFeature) %>%
+  filter(accept_MIS == "TRUE") %>%
+  group_by(FinalBMIS) %>%
+  summarise(MFs = n()) %>%
+  mutate(PercentofAMIS = MFs/MassFeatures)  #This gives us the % of the MF chosen by each IS 
+
+Summary <- left_join(AMIS_percent %>% select(-MFs), BMIS_percent %>% select(-MFs)) %>%
+  mutate(Originality_Index = PercentofBMIS/PercentofAMIS)
+  
+Summarylong <- left_join(AMIS_percent %>% select(-MFs), BMIS_percent %>%
+                           select(-MFs))%>% 
+  gather(key = "type", value = "Percent", -FinalBMIS)
+
+g <- ggplot() +
+  geom_col(data = Summarylong , aes(x = type, y = Percent))+
+  facet_wrap(~FinalBMIS)
+
+g
+
+# write.csv(Summary, paste0("../../output/skyline/",column.id,"_AMISvsBMIS.csv"),sep="")
+
+# ggsave( paste0("../../output/skyline/",column.id,"_AMISvsBMIS.pdf"), plot = g, device = "pdf", width = 10, height = 10, units = "in")
+
+```
+###Get all the data back - and keep only the MF-MIS match set for the BMIS
+```{r, message=FALSE, warning=FALSE}
+#Add a column to the longdat that has important information from the FullDat_fixed, then only return data that is normalized via B-MIS normalization
+FullDat_fixed.update <- FullDat_fixed %>%
+  mutate(FinalBMIS = ifelse(MassFeature == "Alanine", "DL-Alanine, D3 - IS.Norm.Area",
+                      ifelse(MassFeature == "L-Alanine_13C-0 15N-0", "DL-Alanine, D3 - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Histidine", "DL-Histidine, 15N - IS.Norm.Area",
+                      ifelse(MassFeature == "L-Histidine_13C-0 15N-0", "DL-Histidine, 15N - IS.Norm.Area",
+
+                      ifelse(MassFeature == "Proline", "DL-Proline, D7 - IS.Norm.Area",                      
+                      ifelse(MassFeature == "L-Proline_13C-0 15N-0", "DL-Proline, D7 - IS.Norm.Area",
+
+                      ifelse(MassFeature == "Valine", "DL-Valine, D8 - IS.Norm.Area", 
+                      ifelse(MassFeature == "L-Valine_13C-0 15N-0", "DL-Valine, D8 - IS.Norm.Area", 
+                             
+                      ifelse(MassFeature == "Isoleucine", "L-Isoleucine, 15N - IS.Norm.Area",  
+                      ifelse(MassFeature == "L-Isoleucine_13C-0 15N-0", "L-Isoleucine, 15N - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Leucine", "L-Isoleucine, 15N - IS.Norm.Area",   
+                      ifelse(MassFeature == "L-Leucine_13C-0 15N-0", "L-Isoleucine, 15N - IS.Norm.Area",  
+                             
+                      ifelse(MassFeature == "Methionine", "L-Methionine, D3 - IS.Norm.Area",
+                      ifelse(MassFeature == "L-Methionine_13C-0 15N-0", "L-Methionine, D3 - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Adenine", "Adenine, 15N2 - IS.Norm.Area",
+                      ifelse(MassFeature == "Adenine_13C-0 15N-0", "Adenine, 15N2 - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Cytosine", "Cytosine, 13C2-15N3 - IS.Norm.Area",
+                      ifelse(MassFeature == "Cytosine_13C-0 15N-0", "Cytosine, 13C2-15N3 - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Guanine", "Guanine, 13C-15N2 - IS.Norm.Area",
+                      ifelse(MassFeature == "Guanine_13C-0 15N-0", "Guanine, 13C-15N2 - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Arsenobetaine", "Arsenobetaine, 13C2 - IS.Norm.Area",
+                      ifelse(MassFeature == "Arsenobetaine_13C-0 15N-0", "Arsenobetaine, 13C2 - IS.Norm.Area",
+                             
+                             
+                      ifelse(MassFeature == "AMP", "AMP - IS.Norm.Area",
+                      ifelse(MassFeature == "AMP_13C-0 15N-0", "AMP - IS.Norm.Area",
+                      ifelse(MassFeature == "GMP", "GMP - IS.Norm.Area",
+                      ifelse(MassFeature == "GMP_13C-0 15N-0", "GMP - IS.Norm.Area",
+                      ifelse(MassFeature == "Sucrose", "Heavy Sucrose - IS.Norm.Area",
+                      ifelse(MassFeature == "Sucrose_13C-0 15N-0", "Heavy Sucrose - IS.Norm.Area",
+                      ifelse(MassFeature == "Trehalose", "Heavy Trehalose - IS.Norm.Area",
+                      ifelse(MassFeature == "Trehalose_13C-0 15N-0", "Heavy Trehalose - IS.Norm.Area",
+                      ifelse(MassFeature == "Sulfoacetic Acid", "Sulfoacetic Acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Sulfoacetic Acid_13C-0 15N-0", "Sulfoacetic Acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Isethionic acid", "Isethionic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Isethionic acid_13C-0 15N-0", "Isethionic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Succinic acid", "Succinic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Succinic acid_13C-0 15N-0", "Succinic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "L-Cysteic acid", "L-Cysteic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "L-Cysteic acid_13C-0 15N-0", "L-Cysteic acid - IS.Norm.Area",
+                             
+                      ifelse(MassFeature == "Sulfolactic acid", "Sulfolactic acid - IS.Norm.Area",
+                      ifelse(MassFeature == "Sulfolactic acid_13C-0 15N-0", "Sulfolactic acid - IS.Norm.Area",
+                      # ifelse(MassFeature == "Taurine", "Taurine - IS.Norm.Area",
+                      # ifelse(MassFeature == "Taurine_13C-0 15N-0", "Taurine - IS.Norm.Area",
+                             FinalBMIS)))))))))))))))))))))))))))))))))))))))
+                      # ))
+)) %>%
+  filter(MassFeature != "Inj_vol" )
+
+
+BMIS_normalizedData <- FullDat_fixed.update %>%
+  filter(MIS == FinalBMIS) %>%
+  mutate(FinalRSD = RSD_ofPoo) %>%
+  select(MassFeature, Orig_RSD, del_RSD, percentChange, FinalBMIS, FinalRSD) %>%
+  right_join(longdat) %>%
+  filter(MIS == FinalBMIS) %>%
+  left_join(., dat %>% select(Run.Cmpd, runDate, type, SampID, replicate, Area)) %>%
+  rename(OriginalArea = Area)
+
+new.filename = paste0(str_sub(filename,1,-5),"_BMISed.csv")
+write.csv(BMIS_normalizedData, file = new.filename)
+print(paste("Your BMIS results are saved as", new.filename))
+print("The output of the B-MIS normalized data is in the column named Adjusted Area")
+```
+
+```{r write out the model matches}
+BMIS.model <- BMIS_normalizedData %>%
+  dplyr::select(MassFeature, FinalBMIS) %>%
+  unique()
+write_csv(BMIS.model, paste0("../output/TargetedMetabolites/",column.id, "_BMIS Model.csv"))
+
+BMIS.multiplier <- BMIS_normalizedData %>%
+  filter(MassFeature %in% unique(IS.dat$MassFeature)) %>%
+  select(OriginalArea, MassFeature, SampID, type, replicate, runDate) %>%
+  unique() %>%
+  full_join(.,IS.means) %>%
+  filter(!is.na(type)) %>%
+  dplyr::rename(IS.ave = ave) %>%
+  mutate(BMIS.multiplier = ((1/OriginalArea)*(IS.ave)),
+         FinalBMIS =  paste(MassFeature,"Norm.Area",sep=".")) %>%
+  ungroup() %>%
+  dplyr::select(-MassFeature, -OriginalArea, -IS.ave)
+
+write_csv(BMIS.multiplier, paste0("../output/TargetedMetabolites/",column.id, "_BMIS_multipliers.csv"))
+
+```
+

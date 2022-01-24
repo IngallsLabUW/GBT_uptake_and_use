@@ -1,0 +1,171 @@
+Protein Name,C.lab,N.lab,Precursor Ion Name,Experiment,n
+Alanine,0,0,Alanine_13C-0 15N-0,Fate1,6
+Alanine,0,0,Alanine_13C-0 15N-0,Fate2,6
+Alanine,0,1,Alanine_13C-0 15N-1,Fate1,6
+Alanine,0,1,Alanine_13C-0 15N-1,Fate2,6
+Alanine,1,0,Alanine_13C-1 15N-0,Fate1,6
+Alanine,1,0,Alanine_13C-1 15N-0,Fate2,6
+Alanine,1,1,Alanine_13C-1 15N-1,Fate1,6
+Alanine,1,1,Alanine_13C-1 15N-1,Fate2,6
+Alanine,2,0,Alanine_13C-2 15N-0,Fate1,6
+Alanine,2,0,Alanine_13C-2 15N-0,Fate2,6
+Alanine,2,1,Alanine_13C-2 15N-1,Fate1,1
+Alanine,2,1,Alanine_13C-2 15N-1,Fate2,3
+Alanine,3,0,Alanine_13C-3 15N-0,Fate1,1
+Alanine,3,0,Alanine_13C-3 15N-0,Fate2,3
+Arginine,0,0,Arginine_13C-0 15N-0,Fate1,5
+Arginine,0,0,Arginine_13C-0 15N-0,Fate2,5
+Arginine,0,1,Arginine_13C-0 15N-1,Fate1,4
+Arginine,0,1,Arginine_13C-0 15N-1,Fate2,5
+Arginine,1,0,Arginine_13C-1 15N-0,Fate1,4
+Arginine,1,0,Arginine_13C-1 15N-0,Fate2,4
+Arginine,1,1,Arginine_13C-1 15N-1,Fate1,1
+Arginine,1,1,Arginine_13C-1 15N-1,Fate2,1
+Arginine,2,0,Arginine_13C-2 15N-0,Fate2,1
+Arginine,3,0,Arginine_13C-3 15N-0,Fate1,1
+Arginine,3,0,Arginine_13C-3 15N-0,Fate2,1
+Aspartic Acid,0,0,Aspartic Acid_13C-0 15N-0,Fate1,6
+Aspartic Acid,0,0,Aspartic Acid_13C-0 15N-0,Fate2,6
+Aspartic Acid,0,1,Aspartic Acid_13C-0 15N-1,Fate1,6
+Aspartic Acid,0,1,Aspartic Acid_13C-0 15N-1,Fate2,6
+Aspartic Acid,1,0,Aspartic Acid_13C-1 15N-0,Fate1,6
+Aspartic Acid,1,0,Aspartic Acid_13C-1 15N-0,Fate2,6
+Aspartic Acid,1,1,Aspartic Acid_13C-1 15N-1,Fate1,4
+Aspartic Acid,1,1,Aspartic Acid_13C-1 15N-1,Fate2,4
+Aspartic Acid,2,0,Aspartic Acid_13C-2 15N-0,Fate1,4
+Aspartic Acid,2,0,Aspartic Acid_13C-2 15N-0,Fate2,4
+Aspartic Acid,2,1,Aspartic Acid_13C-2 15N-1,Fate1,2
+Aspartic Acid,2,1,Aspartic Acid_13C-2 15N-1,Fate2,1
+Aspartic Acid,3,0,Aspartic Acid_13C-3 15N-0,Fate1,1
+Aspartic Acid,3,0,Aspartic Acid_13C-3 15N-0,Fate2,1
+Glutamic Acid,0,0,Glutamic Acid_13C-0 15N-0,Fate1,6
+Glutamic Acid,0,0,Glutamic Acid_13C-0 15N-0,Fate2,6
+Glutamic Acid,0,1,Glutamic Acid_13C-0 15N-1,Fate1,6
+Glutamic Acid,0,1,Glutamic Acid_13C-0 15N-1,Fate2,6
+Glutamic Acid,1,0,Glutamic Acid_13C-1 15N-0,Fate1,6
+Glutamic Acid,1,0,Glutamic Acid_13C-1 15N-0,Fate2,6
+Glutamic Acid,1,1,Glutamic Acid_13C-1 15N-1,Fate1,5
+Glutamic Acid,1,1,Glutamic Acid_13C-1 15N-1,Fate2,6
+Glutamic Acid,2,0,Glutamic Acid_13C-2 15N-0,Fate1,5
+Glutamic Acid,2,0,Glutamic Acid_13C-2 15N-0,Fate2,6
+Glutamic Acid,3,1,Glutamic Acid_13C-3 15N-1,Fate2,1
+Glycine,0,0,Glycine_13C-0 15N-0,Fate1,3
+Glycine,0,0,Glycine_13C-0 15N-0,Fate2,4
+Glycine,0,1,Glycine_13C-0 15N-1,Fate1,4
+Glycine,0,1,Glycine_13C-0 15N-1,Fate2,4
+Glycine,1,0,Glycine_13C-1 15N-0,Fate1,3
+Glycine,1,0,Glycine_13C-1 15N-0,Fate2,3
+Glycine,1,1,Glycine_13C-1 15N-1,Fate1,4
+Glycine,1,1,Glycine_13C-1 15N-1,Fate2,6
+Glycine,2,0,Glycine_13C-2 15N-0,Fate1,5
+Glycine,2,0,Glycine_13C-2 15N-0,Fate2,6
+Glycine,2,1,Glycine_13C-2 15N-1,Fate1,3
+Glycine,2,1,Glycine_13C-2 15N-1,Fate2,3
+Isoleucine,0,0,Isoleucine_13C-0 15N-0,Fate1,6
+Isoleucine,0,0,Isoleucine_13C-0 15N-0,Fate2,6
+Isoleucine,0,1,Isoleucine_13C-0 15N-1,Fate1,5
+Isoleucine,0,1,Isoleucine_13C-0 15N-1,Fate2,6
+Isoleucine,1,0,Isoleucine_13C-1 15N-0,Fate1,5
+Isoleucine,1,0,Isoleucine_13C-1 15N-0,Fate2,6
+Isoleucine,1,1,Isoleucine_13C-1 15N-1,Fate1,5
+Isoleucine,1,1,Isoleucine_13C-1 15N-1,Fate2,6
+Isoleucine,2,0,Isoleucine_13C-2 15N-0,Fate1,6
+Isoleucine,2,0,Isoleucine_13C-2 15N-0,Fate2,6
+Isoleucine,2,1,Isoleucine_13C-2 15N-1,Fate1,4
+Isoleucine,2,1,Isoleucine_13C-2 15N-1,Fate2,4
+Isoleucine,3,0,Isoleucine_13C-3 15N-0,Fate1,5
+Isoleucine,3,0,Isoleucine_13C-3 15N-0,Fate2,4
+Leucine,0,0,Leucine_13C-0 15N-0,Fate1,5
+Leucine,0,0,Leucine_13C-0 15N-0,Fate2,6
+Leucine,0,1,Leucine_13C-0 15N-1,Fate1,6
+Leucine,0,1,Leucine_13C-0 15N-1,Fate2,6
+Leucine,1,0,Leucine_13C-1 15N-0,Fate1,5
+Leucine,1,0,Leucine_13C-1 15N-0,Fate2,6
+Leucine,1,1,Leucine_13C-1 15N-1,Fate1,4
+Leucine,1,1,Leucine_13C-1 15N-1,Fate2,5
+Leucine,2,0,Leucine_13C-2 15N-0,Fate1,5
+Leucine,2,0,Leucine_13C-2 15N-0,Fate2,6
+Leucine,3,0,Leucine_13C-3 15N-0,Fate1,5
+Leucine,3,0,Leucine_13C-3 15N-0,Fate2,6
+Lysine,0,0,Lysine_13C-0 15N-0,Fate1,6
+Lysine,0,0,Lysine_13C-0 15N-0,Fate2,6
+Lysine,0,1,Lysine_13C-0 15N-1,Fate1,4
+Lysine,0,1,Lysine_13C-0 15N-1,Fate2,6
+Lysine,1,0,Lysine_13C-1 15N-0,Fate1,5
+Lysine,1,0,Lysine_13C-1 15N-0,Fate2,6
+Phenylalaine,0,0,Phenylalaine_13C-0 15N-0,Fate1,5
+Phenylalaine,0,0,Phenylalaine_13C-0 15N-0,Fate2,5
+Phenylalaine,0,1,Phenylalaine_13C-0 15N-1,Fate1,5
+Phenylalaine,0,1,Phenylalaine_13C-0 15N-1,Fate2,6
+Phenylalaine,1,0,Phenylalaine_13C-1 15N-0,Fate1,5
+Phenylalaine,1,0,Phenylalaine_13C-1 15N-0,Fate2,5
+Phenylalaine,1,1,Phenylalaine_13C-1 15N-1,Fate1,5
+Phenylalaine,1,1,Phenylalaine_13C-1 15N-1,Fate2,6
+Phenylalaine,2,0,Phenylalaine_13C-2 15N-0,Fate1,5
+Phenylalaine,2,0,Phenylalaine_13C-2 15N-0,Fate2,6
+Phenylalaine,2,1,Phenylalaine_13C-2 15N-1,Fate1,5
+Phenylalaine,2,1,Phenylalaine_13C-2 15N-1,Fate2,6
+Phenylalaine,3,0,Phenylalaine_13C-3 15N-0,Fate1,5
+Phenylalaine,3,0,Phenylalaine_13C-3 15N-0,Fate2,5
+Phenylalaine,3,1,Phenylalaine_13C-3 15N-1,Fate2,2
+Proline,0,0,Proline_13C-0 15N-0,Fate1,5
+Proline,0,0,Proline_13C-0 15N-0,Fate2,6
+Proline,0,1,Proline_13C-0 15N-1,Fate1,6
+Proline,0,1,Proline_13C-0 15N-1,Fate2,6
+Proline,1,0,Proline_13C-1 15N-0,Fate1,6
+Proline,1,0,Proline_13C-1 15N-0,Fate2,6
+Proline,1,1,Proline_13C-1 15N-1,Fate1,6
+Proline,1,1,Proline_13C-1 15N-1,Fate2,6
+Proline,2,0,Proline_13C-2 15N-0,Fate1,6
+Proline,2,0,Proline_13C-2 15N-0,Fate2,6
+Proline,2,1,Proline_13C-2 15N-1,Fate1,1
+Proline,3,0,Proline_13C-3 15N-0,Fate1,1
+Serine,0,0,Serine_13C-0 15N-0,Fate1,5
+Serine,0,0,Serine_13C-0 15N-0,Fate2,5
+Serine,0,1,Serine_13C-0 15N-1,Fate1,2
+Serine,1,0,Serine_13C-1 15N-0,Fate1,5
+Serine,1,0,Serine_13C-1 15N-0,Fate2,6
+Serine,1,1,Serine_13C-1 15N-1,Fate1,1
+Serine,1,1,Serine_13C-1 15N-1,Fate2,2
+Serine,2,0,Serine_13C-2 15N-0,Fate1,2
+Serine,2,0,Serine_13C-2 15N-0,Fate2,1
+Serine,2,1,Serine_13C-2 15N-1,Fate2,1
+Serine,3,0,Serine_13C-3 15N-0,Fate2,1
+Serine,3,1,Serine_13C-3 15N-1,Fate1,1
+Serine,3,1,Serine_13C-3 15N-1,Fate2,1
+Threonine,0,0,Threonine_13C-0 15N-0,Fate1,5
+Threonine,0,0,Threonine_13C-0 15N-0,Fate2,5
+Threonine,0,1,Threonine_13C-0 15N-1,Fate1,5
+Threonine,0,1,Threonine_13C-0 15N-1,Fate2,5
+Threonine,1,0,Threonine_13C-1 15N-0,Fate1,5
+Threonine,1,0,Threonine_13C-1 15N-0,Fate2,5
+Threonine,1,1,Threonine_13C-1 15N-1,Fate1,6
+Threonine,1,1,Threonine_13C-1 15N-1,Fate2,6
+Threonine,2,0,Threonine_13C-2 15N-0,Fate1,6
+Threonine,2,0,Threonine_13C-2 15N-0,Fate2,6
+Tyrosine,0,0,Tyrosine_13C-0 15N-0,Fate1,6
+Tyrosine,0,0,Tyrosine_13C-0 15N-0,Fate2,3
+Tyrosine,0,1,Tyrosine_13C-0 15N-1,Fate1,6
+Tyrosine,0,1,Tyrosine_13C-0 15N-1,Fate2,5
+Tyrosine,1,0,Tyrosine_13C-1 15N-0,Fate1,6
+Tyrosine,1,0,Tyrosine_13C-1 15N-0,Fate2,5
+Tyrosine,1,1,Tyrosine_13C-1 15N-1,Fate1,6
+Tyrosine,1,1,Tyrosine_13C-1 15N-1,Fate2,2
+Tyrosine,2,0,Tyrosine_13C-2 15N-0,Fate1,6
+Tyrosine,2,0,Tyrosine_13C-2 15N-0,Fate2,2
+Tyrosine,2,1,Tyrosine_13C-2 15N-1,Fate1,3
+Tyrosine,3,0,Tyrosine_13C-3 15N-0,Fate1,3
+Valine,0,0,Valine_13C-0 15N-0,Fate1,6
+Valine,0,0,Valine_13C-0 15N-0,Fate2,6
+Valine,0,1,Valine_13C-0 15N-1,Fate1,6
+Valine,0,1,Valine_13C-0 15N-1,Fate2,6
+Valine,1,0,Valine_13C-1 15N-0,Fate1,6
+Valine,1,0,Valine_13C-1 15N-0,Fate2,6
+Valine,1,1,Valine_13C-1 15N-1,Fate1,6
+Valine,1,1,Valine_13C-1 15N-1,Fate2,6
+Valine,2,0,Valine_13C-2 15N-0,Fate1,6
+Valine,2,0,Valine_13C-2 15N-0,Fate2,6
+Valine,2,1,Valine_13C-2 15N-1,Fate1,2
+Valine,2,1,Valine_13C-2 15N-1,Fate2,1
+Valine,3,0,Valine_13C-3 15N-0,Fate1,5
+Valine,3,0,Valine_13C-3 15N-0,Fate2,4

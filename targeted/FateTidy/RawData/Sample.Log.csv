@@ -1,0 +1,24 @@
+Replicate Name,type,reconstitution volume (L),filtered volume (L),SampID,Rep,Std Curve Conc added (uM)
+191001_Std_AA_AA-IS,Std,,,AA,1,0
+200908_Blk_GBTFateBlk_A,Blk,4.00E-04,2.00E-01,GBTFateBlk,A,0
+200908_Blk_GBTFateBlk_B,Blk,4.00E-04,2.00E-01,GBTFateBlk,B,0
+200908_Smp_GBTFate1T0_A,Smp,4.00E-04,2.00E-01,GBTFate1T0,A,0
+200908_Smp_GBTFate1T0_B,Smp,4.00E-04,2.00E-01,GBTFate1T0,B,0
+200908_Smp_GBTFate1T0_C,Smp,4.00E-04,2.00E-01,GBTFate1T0,C,0
+200908_Smp_GBTFate2T0_A,Smp,4.00E-04,2.00E-01,GBTFate2T0,A,0
+200908_Smp_GBTFate2T0_B,Smp,4.00E-04,2.00E-01,GBTFate2T0,B,0
+200908_Smp_GBTFate2T0_C,Smp,4.00E-04,2.00E-01,GBTFate2T0,C,0
+200908_Smp_GBTFate1Tlong_A,Smp,4.00E-04,2.00E-01,GBTFate1Tlong,A,0
+200908_Smp_GBTFate1Tlong_B,Smp,4.00E-04,2.00E-01,GBTFate1Tlong,B,0
+200908_Smp_GBTFate1Tlong_C,Smp,4.00E-04,2.00E-01,GBTFate1Tlong,C,0
+200908_Smp_GBTFate2Tlong_A,Smp,4.00E-04,2.00E-01,GBTFate2Tlong,A,0
+200908_Smp_GBTFate2Tlong_B,Smp,4.00E-04,2.00E-01,GBTFate2Tlong,B,0
+200908_Smp_GBTFate2Tlong_C,Smp,4.00E-04,2.00E-01,GBTFate2Tlong,C,0
+200908_Std_0uM_GBTFate1T0_A-1,Std,,,StdCurve-T0-1,1,0
+200908_Std_0.5uM_GBTFate1T0_A-1,Std,,,StdCurve-T0-1,1,0.5
+200908_Std_1.0uM_GBTFate1T0_A-1,Std,,,StdCurve-T0-1,1,1
+200908_Std_2.5uM_GBTFate1T0_A-1,Std,,,StdCurve-T0-1,1,2.5
+200908_Std_0uM_GBTFate1T0_A-2,Std,,,StdCurve-T0-2,2,0
+200908_Std_0.5uM_GBTFate1T0_A-2,Std,,,StdCurve-T0-2,2,0.5
+200908_Std_1.0uM_GBTFate1T0_A-2,Std,,,StdCurve-T0-2,2,1
+200908_Std_2.5uM_GBTFate1T0_A-2,Std,,,StdCurve-T0-2,2,2.5

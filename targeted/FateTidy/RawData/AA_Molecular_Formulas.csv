@@ -1,0 +1,19 @@
+Precursor Ion Name,Num N,Num C,Num H,Num O,Num S
+Alanine,1,3,7,2,0
+Arginine,4,6,14,2,0
+Aspartic Acid,1,4,7,4,0
+Cysteine,1,3,7,2,1
+Glutamic Acid,1,5,9,4,0
+Glycine,1,2,5,2,0
+Histidine,3,6,9,2,0
+Isoleucine,1,6,13,2,0
+Leucine,1,6,13,2,0
+Lysine,2,6,14,2,0
+Methionine,1,5,11,2,1
+Phenylalaine,1,9,11,2,0
+Proline,1,5,9,2,0
+Serine,1,3,7,3,0
+Threonine,1,4,9,3,0
+Tryptophan,2,11,12,2,0
+Tyrosine,1,9,11,3,0
+Valine,1,5,11,2,0

@@ -1,0 +1,257 @@
+Protein Name,Replicate Name,Precursor Ion Name,Retention Time,Area,Background,Height,Mass Error PPM,Protein
+Standards_pos,200605_Std_4uMStdsMix1InH2O_1,Asparagine,11.8,20279230,52277,1072990,-3,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_2,Asparagine,11.18,30015260,331906,1049964,-4.3,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_1,Asparagine,11.8,17983540,0,1154787,-3,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_2,Asparagine,11.15,29417264,463771,1625457,-4,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_1,Asparagine,11.75,768059,438213,49637,-2.8,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_2,Asparagine,11.15,1382613,141843,66465,-4.1,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_A,Asparagine,11.48,107503,0,22687,-1.3,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_B,Asparagine,11.72,220038,0,13660,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_A,Asparagine,11.38,1341256,0,102789,-4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_B,Asparagine,11.61,1054649,0,69241,-3.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_C,Asparagine,11.27,1920746,0,126423,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_A,Asparagine,11.3,1675645,0,93005,-4.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_B,Asparagine,11.69,786941,0,65628,-1.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_C,Asparagine,11.25,1641451,0,94106,-4.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_A,Asparagine,11.76,1328252,394382,119614,-2.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_B,Asparagine,11.7,1287048,0,113240,-1.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_C,Asparagine,11.47,2452038,0,155396,-3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_A,Asparagine,11.79,552166,0,52237,-2.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_B,Asparagine,11.72,1068933,0,91705,-2.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_C,Asparagine,11.59,1098051,0,75517,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_A,Asparagine,11.59,1821043,0,122098,-2.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_B,Asparagine,11.59,1300310,0,90266,-3.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_C,Asparagine,11.35,1843650,0,111775,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_A,Asparagine,11.27,1314033,0,65734,-5.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_B,Asparagine,11.8,1765789,412796,140029,-2.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_C,Asparagine,11.58,1414487,0,101332,-3.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_A,Asparagine,11.67,2454851,0,169638,-2.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_B,Asparagine,11.76,3457510,0,255473,-2.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_C,Asparagine,11.63,3565227,0,236984,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_A,Asparagine,11.54,1336078,0,93174,-3.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_B,Asparagine,11.81,716093,293141,63796,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_C,Asparagine,11.61,1200405,0,80075,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_A,Asparagine,11.48,679776,0,60941,-2.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_B,Asparagine,11.39,1123966,0,69917,-4.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_C,Asparagine,11.76,1140021,314688,91675,-2.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_A,Asparagine,11.8,599346,0,55763,-2.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_B,Asparagine,11.56,906985,0,58463,-2.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_C,Asparagine,11.34,1308373,0,75883,-4.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_A,Asparagine,11.3,1306767,0,61970,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_B,Asparagine,11.42,1028377,0,53501,-4.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_C,Asparagine,11.76,648837,82323,58649,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_A,Asparagine,11.8,708353,0,65206,-2.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_B,Asparagine,11.29,1683495,0,100710,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_C,Asparagine,11.47,1110110,0,65544,-3.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_A,Asparagine,11.61,1120192,0,81253,-2.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_B,Asparagine,11.37,1375349,0,85355,-4.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_C,Asparagine,11.48,1403400,0,89218,-3.8,Standards_pos
+Standards_pos,200605_Poo_QC2_1,Asparagine,11.83,3720922,320967,260456,-1.8,Standards_pos
+Standards_pos,200605_Poo_QC2_2,Asparagine,11.7,3986491,0,266932,-1.6,Standards_pos
+Standards_pos,200605_Poo_QC2_3,Asparagine,11.5,4446755,0,274391,-3,Standards_pos
+Standards_pos,200605_Poo_QC2_4,Asparagine,11.4,4729135,51406,321827,-3.9,Standards_pos
+Standards_pos,200605_Poo_QC2_5,Asparagine,11.25,5636211,0,323761,-3.8,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full1,Asparagine,11.8,833066,368298,69352,-1.5,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full2,Asparagine,11.69,1064352,0,92313,-1.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full3,Asparagine,11.51,1370549,0,100718,-2.9,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full4,Asparagine,11.36,1779889,0,109955,-4.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full5,Asparagine,11.2,1924066,0,104870,-3.8,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full6pos,Asparagine,11.16,735380,113298,52388,-4.3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half1,Asparagine,11.83,711614,0,42311,-1.2,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half2,Asparagine,11.72,590834,0,39272,-2,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half3,Asparagine,11.48,606702,239997,46174,-3.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half4,Asparagine,11.41,963331,0,50348,-4.6,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half5,Asparagine,11.19,1144629,0,49077,-3.9,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half6pos,Asparagine,11.19,418422,170517,25998,-4.2,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_1,Aspartic acid,12.39,8621127,126953,582404,-3,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_2,Aspartic acid,11.86,11377131,0,492071,-3.9,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_1,Aspartic acid,12.41,8281861,152407,608517,-2.8,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_2,Aspartic acid,11.89,13566246,0,766526,-3.7,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_1,Aspartic acid,12.41,2259379,0,151605,-2.8,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_2,Aspartic acid,11.92,2521771,0,144575,-4,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_A,Aspartic acid,12.2,444992,0,26131,-2.8,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_B,Aspartic acid,12.38,258124,0,15769,-2.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_A,Aspartic acid,12.14,2619646,0,164010,-4.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_B,Aspartic acid,12.25,2183787,0,156878,-3.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_C,Aspartic acid,12,3617510,0,215038,-4.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_A,Aspartic acid,12.02,3009317,0,165108,-5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_B,Aspartic acid,12.36,2417110,0,169277,-2.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_C,Aspartic acid,12.02,2974034,0,169317,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_A,Aspartic acid,12.38,5064200,0,330610,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_B,Aspartic acid,12.35,3656862,0,269240,-2.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_C,Aspartic acid,12.19,4570413,0,290820,-3.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_A,Aspartic acid,12.41,1901664,0,125809,-3.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_B,Aspartic acid,12.36,3037422,0,196814,-2.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_C,Aspartic acid,12.25,2609269,0,167453,-3.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_A,Aspartic acid,12.24,4414203,44328,297446,-3.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_B,Aspartic acid,12.28,3621865,0,228509,-3.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_C,Aspartic acid,12.08,4755023,0,288078,-4.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_A,Aspartic acid,12,2096865,0,127725,-5.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_B,Aspartic acid,12.47,5237830,43258,366639,-3.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_C,Aspartic acid,12.27,3014978,0,185097,-3.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_A,Aspartic acid,12.31,9371099,0,663648,-2.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_B,Aspartic acid,12.38,11547172,92488,760992,-3.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_C,Aspartic acid,12.3,12071632,160671,760874,-3.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_A,Aspartic acid,12.27,2469084,0,150832,-3.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_B,Aspartic acid,12.42,2470551,0,154905,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_C,Aspartic acid,12.25,1853378,0,112144,-3.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_A,Aspartic acid,12.17,1834652,0,134217,-3.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_B,Aspartic acid,12.09,2291176,0,141165,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_C,Aspartic acid,12.44,3392373,0,231041,-3.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_A,Aspartic acid,12.41,2396860,0,161370,-3.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_B,Aspartic acid,12.16,2386950,0,148206,-3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_C,Aspartic acid,12.08,2429621,0,140183,-4.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_A,Aspartic acid,12,2123957,0,133860,-3.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_B,Aspartic acid,12.11,1859195,0,114348,-4.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_C,Aspartic acid,12.41,2412252,0,162106,-2.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_A,Aspartic acid,12.41,1550506,0,109184,-2.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_B,Aspartic acid,12.03,2212649,0,151444,-4.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_C,Aspartic acid,12.16,1636025,0,102839,-3.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_A,Aspartic acid,12.27,2195394,10930,145383,-3.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_B,Aspartic acid,12.09,2235453,0,125464,-5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_C,Aspartic acid,12.16,2168918,0,135102,-4.1,Standards_pos
+Standards_pos,200605_Poo_QC2_1,Aspartic acid,12.45,7081801,54955,520263,-2.7,Standards_pos
+Standards_pos,200605_Poo_QC2_2,Aspartic acid,12.38,7041419,0,471382,-2.2,Standards_pos
+Standards_pos,200605_Poo_QC2_3,Aspartic acid,12.22,6909561,0,493088,-3.3,Standards_pos
+Standards_pos,200605_Poo_QC2_4,Aspartic acid,12.13,8144207,0,533577,-4.3,Standards_pos
+Standards_pos,200605_Poo_QC2_5,Aspartic acid,12,8170014,113282,499312,-3.9,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full1,Aspartic acid,12.41,3247235,0,218789,-2.6,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full2,Aspartic acid,12.36,3068567,0,197127,-2.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full3,Aspartic acid,12.17,3039718,0,223246,-3.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full4,Aspartic acid,12.13,3375411,0,193794,-4.5,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full5,Aspartic acid,11.95,3578171,0,218914,-4.2,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full6pos,Aspartic acid,11.93,1838862,15461,122259,-4.3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half1,Aspartic acid,12.39,1737924,0,113182,-2.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half2,Aspartic acid,12.31,1523413,0,95088,-2.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half3,Aspartic acid,12.17,1760036,0,112871,-3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half4,Aspartic acid,12.1,1896313,0,104815,-4.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half5,Aspartic acid,11.92,2089157,0,119505,-3.9,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half6pos,Aspartic acid,11.95,1027132,0,64929,-4.1,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_1,Glycine,12.34,6343509,3519,364596,1.5,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_2,Glycine,11.78,6332359,0,429403,0.6,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_1,Glycine,12.38,6253946,51382,335137,1.7,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_2,Glycine,11.83,7453903,0,582796,1,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_1,Glycine,12.08,1076614,0,70708,1.6,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_2,Glycine,11.87,1169463,0,69263,0.4,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_A,Glycine,12,497363,0,35030,1.2,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_B,Glycine,12.03,241539,0,15114,1.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_A,Glycine,11.91,1343807,0,97432,0,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_B,Glycine,12.03,1170098,0,85380,0.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_C,Glycine,11.89,2234368,16557,139183,-0.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_A,Glycine,11.86,1789791,0,117069,-0.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_B,Glycine,12.02,1080295,0,76358,2.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_C,Glycine,11.86,1300498,0,87169,0,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_A,Glycine,12.09,1500156,0,111369,1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_B,Glycine,12.08,1149498,0,83348,2.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_C,Glycine,12,1603164,0,106492,1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_A,Glycine,12.13,1067260,0,72400,1.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_B,Glycine,12.08,1055015,0,70069,1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_C,Glycine,12.06,1290769,0,83021,0.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_A,Glycine,12,1528980,0,110415,0.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_B,Glycine,12.02,1077701,0,82061,0.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_C,Glycine,11.89,1032646,0,81404,-0.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_A,Glycine,11.82,1037119,0,63558,-1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_B,Glycine,12.13,4170551,7028,303769,1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_C,Glycine,12,1533427,0,101370,0.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_A,Glycine,12.03,1261097,0,100994,1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_B,Glycine,12.06,1891311,16380,144810,1.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_C,Glycine,12.05,2049849,0,146916,0.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_A,Glycine,12,2387403,0,180646,0.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_B,Glycine,12.09,2030965,0,141375,1.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_C,Glycine,12,1975160,0,127401,0.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_A,Glycine,11.97,1522226,0,104946,0.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_B,Glycine,11.87,1093928,0,83471,0,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_C,Glycine,12.08,3329721,0,265546,1.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_A,Glycine,12.09,1239551,0,87820,1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_B,Glycine,11.97,1434480,0,99384,1.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_C,Glycine,11.91,1394433,0,103066,0.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_A,Glycine,11.87,1374758,0,90363,1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_B,Glycine,11.91,1084452,0,70798,0.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_C,Glycine,12.08,1124135,0,81602,1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_A,Glycine,12.08,1377405,0,99583,1.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_B,Glycine,11.83,1656199,0,112504,-0.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_C,Glycine,11.97,1312036,0,95519,0.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_A,Glycine,12.03,1026774,0,75849,1.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_B,Glycine,11.89,880211,0,50677,-0.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_C,Glycine,11.96,1205182,0,87880,0.4,Standards_pos
+Standards_pos,200605_Poo_QC2_1,Glycine,12.1,7908749,0,611492,2,Standards_pos
+Standards_pos,200605_Poo_QC2_2,Glycine,12.06,7745120,0,601187,2.3,Standards_pos
+Standards_pos,200605_Poo_QC2_3,Glycine,11.97,8130254,0,559774,1.3,Standards_pos
+Standards_pos,200605_Poo_QC2_4,Glycine,11.91,8636298,0,578804,0.3,Standards_pos
+Standards_pos,200605_Poo_QC2_5,Glycine,11.84,7734241,0,455261,0.6,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full1,Glycine,12.09,1372698,0,103514,1.8,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full2,Glycine,12.05,1320863,0,95035,2.3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full3,Glycine,11.97,1537663,0,111992,1.3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full4,Glycine,11.89,1473895,0,104418,-0.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full5,Glycine,11.83,1723365,0,113928,0.3,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full6pos,Glycine,11.83,582298,0,47619,0.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half1,Glycine,12.11,705471,0,59856,2,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half2,Glycine,12.06,697043,0,47585,2.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half3,Glycine,11.97,841076,0,60018,1.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half4,Glycine,11.96,845379,0,52893,0,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half5,Glycine,11.85,700404,223491,49325,0.6,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half6pos,Glycine,11.86,425361,0,29931,0.2,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_1,Serine,12.08,12870109,862017,752711,-1.3,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InH2O_2,Serine,11.58,17427776,39899,715514,-2.2,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_1,Serine,12.09,12887892,111352,794108,-1.2,Standards_pos
+Standards_pos,200605_Std_4uMStdsMix1InMatrix_2,Serine,11.54,19558254,0,988921,-1.9,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_1,Serine,12.08,1861584,458553,127191,-1.1,Standards_pos
+Standards_pos,200605_Std_H2OinMatrix_2,Serine,11.56,2418956,0,117073,-2.2,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_A,Serine,11.91,2172310,0,116061,-1.3,Standards_pos
+Standards_pos,200605_Blk_GBTFate1MBlk-IS_B,Serine,12.02,1004618,92524,59011,-0.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_A,Serine,11.8,2656513,0,146070,-2.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_B,Serine,11.92,1989498,0,108125,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT0-IS_C,Serine,11.64,3585607,12678,196575,-2.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_A,Serine,11.71,2124351,0,114887,-3.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_B,Serine,12.03,2321198,0,127768,-0.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT12-IS_C,Serine,11.65,3519409,0,187831,-2.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_A,Serine,12.08,3716242,0,227724,-1.4,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_B,Serine,12.05,2787864,106263,171668,-0.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT36-IS_C,Serine,11.91,3691958,0,213775,-1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_A,Serine,12.08,1372243,0,72678,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_B,Serine,12.05,1518549,388538,100640,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT4-IS_C,Serine,11.89,2174312,177218,120184,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_A,Serine,11.94,3056277,0,191100,-1.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_B,Serine,11.95,2712706,0,148191,-1.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT50-IS_C,Serine,11.74,2080022,304891,124377,-2.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_A,Serine,11.68,2743691,0,134893,-3.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_B,Serine,12.11,16231107,532739,1066281,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MT8-IS_C,Serine,11.94,3970338,45103,240684,-2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_A,Serine,12.03,3826959,136859,233341,-0.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_B,Serine,12.06,5441538,0,331850,-1.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate1MTlong-IS_C,Serine,11.93,4621109,0,248839,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_A,Serine,11.92,3708718,0,217043,-2.1,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_B,Serine,12.14,2208428,130755,129368,-1.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT0-IS_C,Serine,11.92,3500823,91335,211878,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_A,Serine,11.87,1683753,0,110623,-1.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_B,Serine,11.86,1332089,160483,83685,-2.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT12-IS_C,Serine,12.13,9984877,496941,657071,-1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_A,Serine,12.09,2629924,3092,153754,-1.2,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_B,Serine,11.89,1679697,27041,93630,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT24-IS_C,Serine,11.75,2250345,0,109822,-2.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_A,Serine,11.67,1793295,374662,104123,-1.5,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_B,Serine,11.8,1647726,0,78794,-2.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT48-IS_C,Serine,12.08,2015064,4384,116678,-0.7,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_A,Serine,12.08,1987226,0,118825,-1.3,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_B,Serine,11.69,1710825,525040,96143,-2.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MT5-IS_C,Serine,11.86,1859127,72440,100929,-1.9,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_A,Serine,11.94,2939590,0,173291,-1.6,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_B,Serine,11.73,1634034,20006,85981,-2.8,Standards_pos
+Standards_pos,200605_Smp_GBTFate2MTlong-IS_C,Serine,11.85,3412373,139392,216788,-2.4,Standards_pos
+Standards_pos,200605_Poo_QC2_1,Serine,12.11,3391320,61330,212093,-0.7,Standards_pos
+Standards_pos,200605_Poo_QC2_2,Serine,12.06,3571195,0,213607,-0.4,Standards_pos
+Standards_pos,200605_Poo_QC2_3,Serine,11.86,3378205,0,204851,-1.6,Standards_pos
+Standards_pos,200605_Poo_QC2_4,Serine,11.76,3812297,0,235151,-2.6,Standards_pos
+Standards_pos,200605_Poo_QC2_5,Serine,11.64,4155078,0,204645,-2.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full1,Serine,12.11,2771649,8820,183326,-0.8,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full2,Serine,12.03,2758388,99886,153624,-0.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full3,Serine,11.83,2934812,0,162378,-1.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full4,Serine,11.76,2544602,589364,173056,-2.7,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full5,Serine,11.62,3404310,0,187112,-2.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Full6pos,Serine,11.59,1167581,177995,86593,-2.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half1,Serine,12.11,1325617,280998,88220,-0.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half2,Serine,12.02,1571617,0,79330,-0.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half3,Serine,11.87,1709668,72540,77544,-1.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half4,Serine,11.74,1767255,0,72070,-2.4,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half5,Serine,11.63,1785138,521278,96828,-2.1,Standards_pos
+Standards_pos,200605_Poo_TruePooGBT_Half6pos,Serine,11.57,1015819,0,53442,-2.5,Standards_pos

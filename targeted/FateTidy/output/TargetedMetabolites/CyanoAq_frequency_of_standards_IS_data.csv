@@ -1,0 +1,33 @@
+Protein Name,Precursor Ion Name,Experiment,n
+Butyrylcarnitine,Butyrylcarnitine_13C-0 15N-0,Fate1,39
+Butyrylcarnitine,Butyrylcarnitine_13C-0 15N-0,Fate2,35
+Internal standards_pos,"Alpha-Tocopherol, D6",Fate1,29
+Internal standards_pos,"Alpha-Tocopherol, D6",Fate2,28
+Internal standards_pos,"Arachiodonic Acid, D8",Fate1,23
+Internal standards_pos,"Arachiodonic Acid, D8",Fate2,21
+Internal standards_pos,"Docosahexaenoic Acid, D5",Fate1,39
+Internal standards_pos,"Docosahexaenoic Acid, D5",Fate2,36
+Internal standards_pos,"Eicosapentaenoic Acid, D5",Fate1,38
+Internal standards_pos,"Eicosapentaenoic Acid, D5",Fate2,36
+Internal standards_pos,"Indole 3 Acetic Acid, D5",Fate1,39
+Internal standards_pos,"Indole 3 Acetic Acid, D5",Fate2,36
+Internal standards_pos,"L-Phenylalanine, D8",Fate1,39
+Internal standards_pos,"L-Phenylalanine, D8",Fate2,36
+Internal standards_pos,"L-Tryptophan, D3",Fate1,39
+Internal standards_pos,"L-Tryptophan, D3",Fate2,36
+Internal standards_pos,"Pyridoxal, D3",Fate1,39
+Internal standards_pos,"Pyridoxal, D3",Fate2,36
+Internal standards_pos,"Riboflavin-dioxopyrimidine, 13C4, 15N2",Fate1,39
+Internal standards_pos,"Riboflavin-dioxopyrimidine, 13C4, 15N2",Fate2,36
+Internal standards_pos,"Thiamine Hydrochloride, 13C3",Fate1,39
+Internal standards_pos,"Thiamine Hydrochloride, 13C3",Fate2,36
+Internal standards_pos,"Tryptamine Hydrochloride, D4",Fate1,36
+Internal standards_pos,"Tryptamine Hydrochloride, D4",Fate2,34
+L-Phenylalanine,L-Phenylalanine_13C-0 15N-0,Fate1,39
+L-Phenylalanine,L-Phenylalanine_13C-0 15N-0,Fate2,36
+L-Tryptophan,L-Tryptophan_13C-0 15N-0,Fate1,39
+L-Tryptophan,L-Tryptophan_13C-0 15N-0,Fate2,36
+Methylthioadenosine,Methylthioadenosine_13C-0 15N-0,Fate1,39
+Methylthioadenosine,Methylthioadenosine_13C-0 15N-0,Fate2,36
+Xanthine,Xanthine_13C-0 15N-0,Fate1,39
+Xanthine,Xanthine_13C-0 15N-0,Fate2,36

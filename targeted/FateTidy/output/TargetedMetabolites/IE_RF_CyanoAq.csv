@@ -1,0 +1,6 @@
+Protein Name,Precursor Ion Name,Fraction1,BestMatch,IE.rsd,IE,RF
+Butyrylcarnitine,Butyrylcarnitine_13C-0 15N-0,CyanoAq,Butyryl-L-carnitine,1.1780378949847756,731971436,0.9493250063583005
+L-Phenylalanine,L-Phenylalanine_13C-0 15N-0,CyanoAq,Phenylalanine,0.5676389843181278,55367461,0.9174996600509234
+L-Tryptophan,L-Tryptophan_13C-0 15N-0,CyanoAq,Tryptophan,1.0088359806767324,26942716,0.9496691876870177
+Methylthioadenosine,Methylthioadenosine_13C-0 15N-0,CyanoAq,MTA,1.1449286061415955,173292348,0.9386160631992108
+Xanthine,Xanthine_13C-0 15N-0,CyanoAq,Xanthine,0.7535971369271078,20546816,0.7797099859492567

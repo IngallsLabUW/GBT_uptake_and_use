@@ -1,0 +1,242 @@
+"","Emperical.Formula","Compound.Name","C","N.numb","prob.of.13C1","prob.of.13C2","prob.of15N1","M.only.total"
+"1","C25H42N7O18P3S","(S)-3-Hydroxybutyryl-CoA",25,7,27.5,3.63,2.59,66.28
+"2","C25H40N7O18P3S","Acetoacetyl-CoA",25,7,27.5,3.63,2.59,66.28
+"3","C23H38N7O17P3S","Acetyl-CoA",23,7,25.3,3.0613,2.59,69.0487
+"4","C25H40N7O17P3S","Crotonoyl-CoA",25,7,27.5,3.63,2.59,66.28
+"5","C25H40N7O19P3S","D-Methylmalonyl-CoA",25,7,27.5,3.63,2.59,66.28
+"6","C24H38N7O19P3S","Malonyl-CoA",24,7,26.4,3.3396,2.59,67.6704
+"7","C24H40N7O17P3S","Propionyl-CoA",24,7,26.4,3.3396,2.59,67.6704
+"8","C25H40N7O19P3S","Succinyl-CoA",25,7,27.5,3.63,2.59,66.28
+"9","C10H15N5O10P2","Adenosine diphosphate",10,5,11,0.5445,1.85,86.6055
+"10","C10H14N5O7P","Adenosine monophosphate",10,5,11,0.5445,1.85,86.6055
+"11","C10H16N5O13P3","Adenosine triphosphate",10,5,11,0.5445,1.85,86.6055
+"12","C10H14N5O8P","Guanosine monophosphate",10,5,11,0.5445,1.85,86.6055
+"13","C10H16N5O14P3","Guanosine triphosphate",10,5,11,0.5445,1.85,86.6055
+"14","C21C(13)2H38N7O17P3S","Acetyl-CoA, 13C2",NA,NA,NA,NA,NA,NA
+"15","C10H13N(15)5O7P","AMP, 15N5",NA,NA,NA,NA,NA,NA
+"16","C10H13N(15)5O8P","GMP, 15N5",NA,NA,NA,NA,NA,NA
+"17","C(13)2H6O4S","Isethionic acid, 13C2",NA,NA,NA,NA,NA,NA
+"18","C3D3H4NO5S","L-Cysteic acid, 2H3",NA,NA,NA,NA,NA,NA
+"19","C4D4H2O4","Succinic acid, 2H4",NA,NA,NA,NA,NA,NA
+"20","C(13)12H22O11","Sucrose, 13C",NA,NA,NA,NA,NA,NA
+"21","C(13)2H4O5S","Sulfoacetic acid, 13C2",NA,NA,NA,NA,NA,NA
+"22","C(13)2H5O4S","3-Sulfolactate, 13C3",NA,NA,NA,NA,NA,NA
+"23","C2D4H3NO3S","Taurine, 2H4",NA,NA,NA,NA,NA,NA
+"24","C(13)12H22O11","Trehalose, 13C",NA,NA,NA,NA,NA,NA
+"25","C5D4H2N2O2","Thymine, 2H4",NA,NA,NA,NA,NA,NA
+"26","C4D2H2N(15)2O2","Uracil, 15N2, 2H2",NA,NA,NA,NA,NA,NA
+"27","C10H12N5O6P","3',5'-Cyclic AMP",10,5,11,0.5445,1.85,86.6055
+"28","C20H24N10O14P2","3',5'-Cyclic diGMP",20,10,22,2.299,3.7,72.001
+"29","C10H12N5O7P","3',5'-Cyclic GMP",10,5,11,0.5445,1.85,86.6055
+"30","C5H7NO3","5-Oxoproline",5,1,5.5,0.121,0.37,94.009
+"31","C5H4N4O","Allopurinol",5,4,5.5,0.121,1.48,92.899
+"32","C6H13NO3","Hydroxyisoleucine",6,1,6.6,0.1815,0.37,92.8485
+"33","C10H12N4O5","Inosine",10,4,11,0.5445,1.48,86.9755
+"34","C6H7NO3S","Sulfanilic acid",6,1,6.6,0.1815,0.37,92.8485
+"35","C6H6N2O2","Urocanic acid",6,2,6.6,0.1815,0.74,92.4785
+"36","C3H7NO4S","L-Cysteinesulfinic acid",3,1,3.3,0.0363,0.37,96.2937
+"37","C10H16N4O3","Anserine",10,4,11,0.5445,1.48,86.9755
+"38","C9H14N4O3","Carnosine",9,4,9.9,0.4356,1.48,88.1844
+"39","C5H4N4O","Hypoxanthine",5,4,5.5,0.121,1.48,92.899
+"40","C11H19NO8","N-Acetylmuramic acid",11,1,12.1,0.6655,0.37,86.8645
+"41","C4H7NO3","Acetylglycine",4,1,4.4,0.0726,0.37,95.1574
+"42","C6H11NO3","Butyrylglycine",6,1,6.6,0.1815,0.37,92.8485
+"43","C14H18N2O5","Glutamylphenylalanine",14,2,15.4,1.1011,0.74,82.7589
+"44","C7H11NO5","N-Acetyl-L-glutamic acid",7,1,7.7,0.2541,0.37,91.6759
+"45","C5H9NO3","Propionylglycine",5,1,5.5,0.121,0.37,94.009
+"46","C5H5N5","Adenine",5,5,5.5,0.121,1.85,92.529
+"47","C4H5N3O","Cytosine",4,3,4.4,0.0726,1.11,94.4174
+"48","C5H5N5O","Guanine",5,5,5.5,0.121,1.85,92.529
+"49","C5H6N2O2","Thymine",5,2,5.5,0.121,0.74,93.639
+"50","C4H4N2O2","Uracil",4,2,4.4,0.0726,0.74,94.7874
+"51","C10H13N5O4","Adenosine",10,5,11,0.5445,1.85,86.6055
+"52","C9H13N3O5","Cytidine",9,3,9.9,0.4356,1.11,88.5544
+"53","C10H13N5O5","Guanosine",10,5,11,0.5445,1.85,86.6055
+"54","C10H14N2O5","Thymidine",10,2,11,0.5445,0.74,87.7155
+"55","C9H12N2O6","Uridine",9,2,9.9,0.4356,0.74,88.9244
+"56","C15H24N2O17P2","UDP-glucose",15,2,16.5,1.2705,0.74,81.4895
+"57","C17H27N3O17P2","UDP-N-acetylglucosamine",17,3,18.7,1.6456,1.11,78.5444
+"58","C5H4N2O4","Orotic acid",5,2,5.5,0.121,0.74,93.639
+"59","C6H10N2O2","Ectoine",6,2,6.6,0.1815,0.74,92.4785
+"60","C9H9NO","Indole-3-carbinol",9,1,9.9,0.4356,0.37,89.2944
+"61","C11H9NO3","Indolepyruvic acid",11,1,12.1,0.6655,0.37,86.8645
+"62","C27H33N9O15P2","Flavin adenine dinucleotide",27,9,29.7,4.2471,3.33,62.7229
+"63","C21H27N7O14P2","NAD",21,7,23.1,2.541,2.59,71.769
+"64","C21H27N7O14P2","NADH",21,7,23.1,2.541,2.59,71.769
+"65","C21H29N7O17P3","NADP",21,7,23.1,2.541,2.59,71.769
+"66","C21H29N7O17P3","NADPH",21,7,23.1,2.541,2.59,71.769
+"67","C17H21N4O9P","Riboflavin-5-phosphate",17,4,18.7,1.6456,1.48,78.1744
+"68","C3H9NO3S","Amino Propanesulfonic Acid",3,1,3.3,0.0363,0.37,96.2937
+"69","C3H7NO5S","L-Cysteic acid",3,1,3.3,0.0363,0.37,96.2937
+"70","C4H9NO4S","N-Acetyltaurine",4,1,4.4,0.0726,0.37,95.1574
+"71","C2H7NO3S","Taurine",2,1,2.2,0.0121,0.37,97.4179
+"72","C2H5NO2","Glycine",2,1,2.2,0.0121,0.37,97.4179
+"73","C3H7NO2","L-Alanine",3,1,3.3,0.0363,0.37,96.2937
+"74","C6H14N4O2","L-Arginine",6,4,6.6,0.1815,1.48,91.7385
+"75","C4H8N2O3","L-Asparagine",4,2,4.4,0.0726,0.74,94.7874
+"76","C4H7NO4","L-Aspartic acid",4,1,4.4,0.0726,0.37,95.1574
+"77","C3H7NO2S","L-Cysteine",3,1,3.3,0.0363,0.37,96.2937
+"78","C6H12N2O4S2","L-Cystine",6,2,6.6,0.1815,0.74,92.4785
+"79","C5H9NO4","L-Glutamic acid",5,1,5.5,0.121,0.37,94.009
+"80","C5H10N2O3","L-Glutamine",5,2,5.5,0.121,0.74,93.639
+"81","C6H9N3O2","L-Histidine",6,3,6.6,0.1815,1.11,92.1085
+"82","C6H13NO2","L-Isoleucine",6,1,6.6,0.1815,0.37,92.8485
+"83","C10H12N2O3","L-Kynurenine",10,2,11,0.5445,0.74,87.7155
+"84","C6H13NO2","L-Leucine",6,1,6.6,0.1815,0.37,92.8485
+"85","C6H14N2O2","L-Lysine",6,2,6.6,0.1815,0.74,92.4785
+"86","C5H11NO2S","L-Methionine",5,1,5.5,0.121,0.37,94.009
+"87","C5H9NO2","L-Proline",5,1,5.5,0.121,0.37,94.009
+"88","C3H7NO3","L-Serine",3,1,3.3,0.0363,0.37,96.2937
+"89","C4H9NO3","L-Threonine",4,1,4.4,0.0726,0.37,95.1574
+"90","C9H11NO3","L-Tyrosine",9,1,9.9,0.4356,0.37,89.2944
+"91","C5H11NO2","L-Valine",5,1,5.5,0.121,0.37,94.009
+"92","C5H9NO3","Hydroxyproline",5,1,5.5,0.121,0.37,94.009
+"93","C6H14N2O3","L-Hydroxylysine",6,2,6.6,0.1815,0.74,92.4785
+"94","C4H9NO2","4-Aminobutyric acid",4,1,4.4,0.0726,0.37,95.1574
+"95","C4H9NO2","Dimethylglycine",4,1,4.4,0.0726,0.37,95.1574
+"96","C5H11NO2","Glycine betaine",5,1,5.5,0.121,0.37,94.009
+"97","C7H14N2O4S","L-Cystathionine",7,2,7.7,0.2541,0.74,91.3059
+"98","C4H9NO2S","L-Homocysteine",4,1,4.4,0.0726,0.37,95.1574
+"99","C14H20N6O5S","S-Adenosylhomocysteine",14,6,15.4,1.1011,2.22,81.2789
+"100","C15H22N6O5S","S-Adenosylmethionine",15,6,16.5,1.2705,2.22,80.0095
+"101","C16H28N2O11","Chitobiose",16,2,17.6,1.452,0.74,80.208
+"102","C10H17N3O6S","Glutathione",10,3,11,0.5445,1.11,87.3455
+"103","C3H7NO2","Sarcosine",3,1,3.3,0.0363,0.37,96.2937
+"104","C3H4D3NO2","DL-Alanine, 2H3",NA,NA,NA,NA,NA,NA
+"105","C6H9N3N(15)O2","DL-Histidine, 15N",NA,NA,NA,NA,NA,NA
+"106","C5H3D7NO2","DL-Proline, 2H7",NA,NA,NA,NA,NA,NA
+"107","C5H4D8NO2","DL-Valine, 2H8",NA,NA,NA,NA,NA,NA
+"108","C6H13N(15)O2","L-Isoleucine, 15N",NA,NA,NA,NA,NA,NA
+"109","C5D3H8NO2S","L-Methionine, 2H3",NA,NA,NA,NA,NA,NA
+"110","C(13)5H11N(15)O2","Glycine betaine, 13C5, 15N",NA,NA,NA,NA,NA,NA
+"111","C5H5N(15)2N3","Adenine, 15N2",NA,NA,NA,NA,NA,NA
+"112","C(13)2C2H5N(15)3O","Cytosine, 13C2, 15N3",NA,NA,NA,NA,NA,NA
+"113","C(13)C4H5N(15)2N3O","Guanine, 13C, 15N2",NA,NA,NA,NA,NA,NA
+"114","C(13)2C3H12AsO2","Arsenobetaine, 13C2",NA,NA,NA,NA,NA,NA
+"115","C9H11NO2","Ethyl aminobenzoate",9,1,9.9,0.4356,0.37,89.2944
+"116","C10H18N4O6","L-Arginosuccinic acid",10,4,11,0.5445,1.48,86.9755
+"117","C7H15NO3","Carnitine",7,1,7.7,0.2541,0.37,91.6759
+"118","C6H13N3O3","Citrulline",6,3,6.6,0.1815,1.11,92.1085
+"119","C10H18N4O6S2","Cys-Gly, oxidized",10,4,11,0.5445,1.48,86.9755
+"120","C4H7NOS","Homocysteine thiolactone",4,1,4.4,0.0726,0.37,95.1574
+"121","C5H10N2O3S","L-Cysteinylglycine",5,2,5.5,0.121,0.74,93.639
+"122","C8H16N2O4S2","L-Homocystine",8,2,8.8,0.3388,0.74,90.1212
+"123","C4H9NO3","L-Homoserine",4,1,4.4,0.0726,0.37,95.1574
+"124","C5H11NO3S","L-Methionine S-oxide",5,1,5.5,0.121,0.37,94.009
+"125","C5H12N2O2","L-Ornithine",5,2,5.5,0.121,0.74,93.639
+"126","C8H16N2O3","N6-Acetyl-L-lysine",8,2,8.8,0.3388,0.74,90.1212
+"127","C5H9NO4","O-Acetyl-L-serine",5,1,5.5,0.121,0.37,94.009
+"128","C7H13NO2","Proline betaine",7,1,7.7,0.2541,0.37,91.6759
+"129","C7H7NO2","Trigonelline",7,1,7.7,0.2541,0.37,91.6759
+"130","C11H21NO4","Butyrylcarnitine",11,1,12.1,0.6655,0.37,86.8645
+"131","C6H13NO5","Glucosamine",6,1,6.6,0.1815,0.37,92.8485
+"132","C8H21NO6P","Glycerophosphocholine",8,1,8.8,0.3388,0.37,90.4912
+"133","C9H17NO4","O-Acetylcarnitine",9,1,9.9,0.4356,0.37,89.2944
+"134","C10H19NO4","O-Propionylcarnitine",10,1,11,0.5445,0.37,88.0855
+"135","C11H19N3O6","Ophthalmic acid",11,3,12.1,0.6655,1.11,86.1245
+"136","C19H33NO2S","S-Farnesyl-L-cysteine methyl ester",19,1,20.9,2.0691,0.37,76.6609
+"137","C3H9NO","Trimethylamine N-oxide",3,1,3.3,0.0363,0.37,96.2937
+"138","C3H9N","Trimethylamine",3,1,3.3,0.0363,0.37,96.2937
+"139","C3H7NO2","beta-Alanine",3,1,3.3,0.0363,0.37,96.2937
+"140","C7H13NO3","Betonicine",7,1,7.7,0.2541,0.37,91.6759
+"141","C10H13N5O3","Deoxyadenosine",10,5,11,0.5445,1.85,86.6055
+"142","C9H19NO4","Dexpanthenol",9,1,9.9,0.4356,0.37,89.2944
+"143","C10H15NO","Hordenine",10,1,11,0.5445,0.37,88.0855
+"144","C3H6N6","Melamine",3,6,3.3,0.0363,2.22,94.4437
+"145","C11H19NO6","O-Methylmalonyl-L-carnitine",11,1,12.1,0.6655,0.37,86.8645
+"146","C7H13NO3","Turicine",7,1,7.7,0.2541,0.37,91.6759
+"147","C7H16NO2","Acetylcholine",7,1,7.7,0.2541,0.37,91.6759
+"148","C6H13NO2","beta-Alaninebetaine",6,1,6.6,0.1815,0.37,92.8485
+"149","C5H7N3O","5-Methylcytosine",5,3,5.5,0.121,1.11,93.269
+"150","C5H9NO4","beta-Glutamic acid",5,1,5.5,0.121,0.37,94.009
+"151","C8H15NO6","N-Acetyl-D-glucosamine",8,1,8.8,0.3388,0.37,90.4912
+"152","C6H7N5","N6-Methyladenine",6,5,6.6,0.1815,1.85,91.3685
+"153","C9H20N2O2","N6,N6,N6-Trimethyl-L-lysine",9,2,9.9,0.4356,0.74,88.9244
+"154","C7H16NO2","(3-Carboxypropyl)trimethylammonium",7,1,7.7,0.2541,0.37,91.6759
+"155","C7H5NO4","2,3-Pyridinedicarboxylic acid",7,1,7.7,0.2541,0.37,91.6759
+"156","C9H15N3O2S","Ergothioneine",9,3,9.9,0.4356,1.11,88.5544
+"157","C6H9NO5","Succinylglycine",6,1,6.6,0.1815,0.37,92.8485
+"158","C4H9N3O2","Creatine",4,3,4.4,0.0726,1.11,94.4174
+"159","C6H10N2O3","5-Hydroxyectoine",6,2,6.6,0.1815,0.74,92.4785
+"160","C7H7NO2","Homarine",7,1,7.7,0.2541,0.37,91.6759
+"161","C9H17NO7","Muramic acid",9,1,9.9,0.4356,0.37,89.2944
+"162","C16H21NO2","2-Heptyl-3-hydroxy-quinolone",16,1,17.6,1.452,0.37,80.578
+"163","C20H32N6O12S2","Glutathione disulfide",20,6,22,2.299,2.22,73.481
+"164","C2H7NO2S","Hypotaurine",2,1,2.2,0.0121,0.37,97.4179
+"165","C3H9NO3S","N-Methyltaurine",3,1,3.3,0.0363,0.37,96.2937
+"166","C6H5NO2","Nicotinic acid",6,1,6.6,0.1815,0.37,92.8485
+"167","C5H14NO","Choline",5,1,5.5,0.121,0.37,94.009
+"168","C12H19N4O7P2S","Thiamine diphosphate",12,4,13.2,0.7986,1.48,84.5214
+"169","C12H18N4O4PS","Thiamine monophosphate",12,4,13.2,0.7986,1.48,84.5214
+"170","C10H15N5O","Dihydrozeatin",10,5,11,0.5445,1.85,86.6055
+"171","C10H13N5","N6-Dimethylallyladenine",10,5,11,0.5445,1.85,86.6055
+"172","C10H13N5O","Zeatin",10,5,11,0.5445,1.85,86.6055
+"173","C9H11NO2","L-Phenylalanine",9,1,9.9,0.4356,0.37,89.2944
+"174","C11H12N2O2","L-Tryptophan",11,2,12.1,0.6655,0.74,86.4945
+"175","C13H16N2O2","Melatonin",13,2,14.3,0.9438,0.74,84.0162
+"176","C29D6H44O2","alpha-Tocopherol, 2H6",NA,NA,NA,NA,NA,NA
+"177","C20D8H24O2","Arachidonic acid, 2H8",NA,NA,NA,NA,NA,NA
+"178","C22H28D5O2","Docosahexaenoic acid, 2H5",NA,NA,NA,NA,NA,NA
+"179","C20H26D5O2","Eicosapentaenoic acid, 2H5",NA,NA,NA,NA,NA,NA
+"180","C10D5H4NO2","Indole-3-acetic acid, 2H5",NA,NA,NA,NA,NA,NA
+"181","C9D8H3O2","L-Phenylalanine, 2H8",NA,NA,NA,NA,NA,NA
+"182","C11D3H9N2O2","L-Tryptophan, 2H3",NA,NA,NA,NA,NA,NA
+"183","C8D3H7NO3","Pyridoxal, 2H3",NA,NA,NA,NA,NA,NA
+"184","C(13)4C13H20N(15)2N2O6","Vitamin B2, 13C4, 15N2",NA,NA,NA,NA,NA,NA
+"185","C(13)4C8H17N4OS","Thiamine, 13C3",NA,NA,NA,NA,NA,NA
+"186","C10D4H8N2","Tryptamine, 2H4",NA,NA,NA,NA,NA,NA
+"187","C7H7NO2","4-Aminobenzoic acid",7,1,7.7,0.2541,0.37,91.6759
+"188","C5H14N4","Agmatine",5,4,5.5,0.121,1.48,92.899
+"189","C14H23N6O3S","Decarboxylated S-Adenosylmethionine",14,6,15.4,1.1011,2.22,81.2789
+"190","C4H7NO2","Homoserine lactone",4,1,4.4,0.0726,0.37,95.1574
+"191","C11H9NO2","Indoleacrylic acid",11,1,12.1,0.6655,0.37,86.8645
+"192","C11H21NO4","Isobutyryl-carnitine",11,1,12.1,0.6655,0.37,86.8645
+"193","C42H82NO8P","1-Palmitoyl-2-oleoyl-sn-glycero-3-phosphocholine",42,1,46.2,10.4181,0.37,43.0119
+"194","C41H79NO8P","1-Stearoyl-2-oleoyl-sn-glycero-3-phosphoethanolamine",41,1,45.1,9.922,0.37,44.608
+"195","C10H8N2","3-Indoleacetonitrile",10,2,11,0.5445,0.74,87.7155
+"196","C11H11NO2","3-Indolepropionic acid",11,1,12.1,0.6655,0.37,86.8645
+"197","C11H8N2S","Camalexin",11,NA,12.1,0.6655,NA,NA
+"198","C10H10N2O","Indole-3-acetamide",10,2,11,0.5445,0.74,87.7155
+"199","C10H9NO2","Indole-3-acetic acid",10,1,11,0.5445,0.37,88.0855
+"200","C9H7NO2","Indole-3-carboxylic acid",9,1,9.9,0.4356,0.37,89.2944
+"201","C11H11NO2","Indole-3-methyl acetate",11,1,12.1,0.6655,0.37,86.8645
+"202","C12H13NO2","Indolebutyric acid",12,1,13.2,0.7986,0.37,85.6314
+"203","C11H11NO3","Indolelactate",11,1,12.1,0.6655,0.37,86.8645
+"204","C10H9N5O","Kinetin",10,5,11,0.5445,1.85,86.6055
+"205","C10H9NO2","Methyl indole-3-carboxylate",10,1,11,0.5445,0.37,88.0855
+"206","C10H12N2","Tryptamine",10,2,11,0.5445,0.74,87.7155
+"207","C10H11NO","Tryptophol",10,1,11,0.5445,0.37,88.0855
+"208","C8H10N4O2","Caffeine",8,4,8.8,0.3388,1.48,89.3812
+"209","C5H4N4O2","Xanthine",5,4,5.5,0.121,1.48,92.899
+"210","C13H13NO3","2-(3,5-Dichlorophenylcarbamoyl)-1,2-dimethylcyclopropane-1-carboxylic acid",13,1,14.3,0.9438,0.37,84.3862
+"211","C16H21NO","2-Heptyl-4(1H)-quinolone",16,1,17.6,1.452,0.37,80.578
+"212","C16H29NO4","3OHC12-HSL",16,1,17.6,1.452,0.37,80.578
+"213","C14H23NO4","N-(3-Oxodecanoyl)homoserine lactone",14,1,15.4,1.1011,0.37,83.1289
+"214","C16H27NO4","N-(3-Oxododecanoyl)homoserine lactone",16,1,17.6,1.452,0.37,80.578
+"215","C10H15NO4","N-(3-Oxohexanoyl)homoserine lactone",10,1,11,0.5445,0.37,88.0855
+"216","C12H19NO4","N-(3-Oxooctanoyl)homoserine lactone",12,1,13.2,0.7986,0.37,85.6314
+"217","C13H13NO4","N-(4-Coumaroyl)-L-homoserine lactone",13,1,14.3,0.9438,0.37,84.3862
+"218","C16H29NO3","N-3-Oxo-dodecanoyl-L-homoserine lactone",16,1,17.6,1.452,0.37,80.578
+"219","C8H13NO3","N-Butyryl-L-homoserine lactone",8,1,8.8,0.3388,0.37,90.4912
+"220","C14H25NO3","N-Decanoyl-L-homoserine lactone",14,1,15.4,1.1011,0.37,83.1289
+"221","C10H17NO3","N-Hexanoyl-L-homoserine lactone",10,1,11,0.5445,0.37,88.0855
+"222","C12H21NO3","N-Octanoyl-L-homoserine lactone",12,1,13.2,0.7986,0.37,85.6314
+"223","C18H33NO3","N-Tetradecanoyl-DL-homoserine lactone",18,1,19.8,1.8513,0.37,77.9787
+"224","C11H15N5O3S","Methylthioadenosine",11,5,12.1,0.6655,1.85,85.3845
+"225","C15H21NO6","Domoic acid",15,1,16.5,1.2705,0.37,81.8595
+"226","C6H9NOS","5-(2-Hydroxyethyl)-4-methylthiazole",6,1,6.6,0.1815,0.37,92.8485
+"227","C10H16N2O3S","Biotin",10,2,11,0.5445,0.74,87.7155
+"228","C10H18N2O3","Desthiobiotin",10,2,11,0.5445,0.74,87.7155
+"229","C19H19N7O6","Folic acid",19,7,20.9,2.0691,2.59,74.4409
+"230","C9H17NO5","Pantothenic acid",9,1,9.9,0.4356,0.37,89.2944
+"231","C8H10NO6P","Pyridoxal phosphate",8,1,8.8,0.3388,0.37,90.4912
+"232","C8H9NO3","Pyridoxal",8,1,8.8,0.3388,0.37,90.4912
+"233","C8H12N2O2","Pyridoxamine",8,2,8.8,0.3388,0.74,90.1212
+"234","C8H11NO3","Pyridoxine",8,1,8.8,0.3388,0.37,90.4912
+"235","C17H20N4O6","Riboflavin",17,4,18.7,1.6456,1.48,78.1744
+"236","C12H17N4OS","Thiamine",12,4,13.2,0.7986,1.48,84.5214
+"237","C9H10N2","Dimethylbenzimidazole",9,2,9.9,0.4356,0.74,88.9244
+"238","C72H100CoN18O17P","Adenosylcobalamin",72,18,79.2,30.9276,6.66,-16.7876
+"239","C63H88CoN14O14P","Cyanocobalamin",63,14,69.3,23.6313,5.18,1.88869999999997
+"240","C62H89CoN13O15P","Hydroxocobalamin",62,13,68.2,22.8811,4.81,4.10889999999999
+"241","C63H91CoN13O14P","Methylcobalamin",63,13,69.3,23.6313,4.81,2.25869999999998
