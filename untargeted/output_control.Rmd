@@ -3,7 +3,19 @@ title: "Control Script for GBT data"
 output: html_document
 ---
 
-Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
+This document is meant to be run from within the GBT_uptake_and_use R project to ensure all file paths and working directories are correct. Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
+
+mzXML files should be placed in the corresponding "mzXMLs_pos", "mzXMLs_pos", or
+"mzXMLs_cyano" sub-folder of the "untargeted" directory, or the setup chunk below should be edited to reflect their new locations.
+
+The following code blocks are intended to be run six separate times, corresponding to the following options and data sources:
+
+polarity = "pos", identifier = "pos", exp.num = 1
+polarity = "pos", identifier = "pos", exp.num = 2
+polarity = "neg", identifier = "neg", exp.num = 1
+polarity = "neg", identifier = "neg", exp.num = 2
+polarity = "pos", identifier = "cyano", exp.num = 1
+polarity = "pos", identifier = "cyano", exp.num = 2
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = TRUE)
@@ -14,19 +26,26 @@ library(data.table)
 library(pbapply)
 library(RaMS)
 
-polarity <- "pos"
-identifier <- "cyano"   #Either the same as polarity (pos/neg) or "cyano"
-exp.num = 1 # 1 or 2
-if(exp.num ==2){ output_folder <- paste0("output_folder_", identifier, "/")} else {
-  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")}
-mzxml_path <- paste0("mzXMLs_", identifier, "/")
+# Change the below options
+polarity = "neg" # Either "pos" or "neg"
+identifier = "neg"   #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 1 # Either 1 or 2
+# Create a folder to hold the output
+if(exp.num ==2){ 
+  output_folder <- paste0("output_folder_", identifier, "/")
+} else {
+  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")
+}
+
+# Point to the raw mzXML files
+mzxml_path <- paste0("untargeted/mzXMLs_", identifier, "/")
 if(identifier=="cyano"){
   date_run <- "200612"
 } else {
   date_run <- "200605"
 }
 
-source("scripts/functions.R")
+source("untargeted/scripts/functions.R")
 cruise_metadata <- list.files(mzxml_path, pattern = "mzXML") %>%
   data.frame(filename=.) %>%
   mutate(exp_num=str_extract(filename, "(?<=Fate)\\d(?=M)|Blk|Std")) %>%
@@ -36,8 +55,6 @@ cruise_metadata <- list.files(mzxml_path, pattern = "mzXML") %>%
   mutate(time=ifelse(type=="Blk"|type=="Std", -1, time)) %>%
   mutate(IS=str_extract(filename, "(?<=-)IS|pos|neg(?=_)")) %>%
   mutate(tripl=str_extract(filename, "[A-C](?=.mzXML)")) %>%
-  # filter(IS=="pos"|type=="Std") %>%
-  # filter(IS==polarity) %>%
   filter(exp_num==exp.num|exp_num=="Blk"|exp_num=="Std") %>%
   arrange(time)
 
@@ -91,7 +108,7 @@ if(identifier=="cyano"){
 
 
 # Perform peakpicking
-source("scripts/peakpicking.R")
+source("untargeted/scripts/peakpicking.R")
 
 # Save intermediate results
 saveRDS(xdata, file = paste0(output_folder, "xdata.rds"))
@@ -166,7 +183,7 @@ shape_remove_threshold <- 0.8
 area_remove_threshold <- 0
 
 
-source("scripts/deisoadduct.R")
+source("untargeted/scripts/deisoadduct.R")
 
 write.csv(addiso_features, file=paste0(output_folder, "addiso_features.csv"), row.names = FALSE)
 write.csv(filled_peaks, file=paste0(output_folder, "filled_peaks.csv"), row.names = FALSE)
@@ -231,7 +248,7 @@ feature_data <- filled_peaks %>%
   group_by(feature) %>%
   summarise(mzmed=median(mz), rtmed=median(rt), avgarea=mean(M_area))
 
-source("scripts/standard_assignments.R")
+source("untargeted/scripts/standard_assignments.R")
 
 write.csv(stan_annotations, paste0(output_folder, "stan_annotations.csv"), 
           row.names = FALSE)
