@@ -56,6 +56,7 @@ cruise_metadata <- list.files(mzxml_path, pattern = "mzXML") %>%
   mutate(IS=str_extract(filename, "(?<=-)IS|pos|neg(?=_)")) %>%
   mutate(tripl=str_extract(filename, "[A-C](?=.mzXML)")) %>%
   filter(exp_num==exp.num|exp_num=="Blk"|exp_num=="Std") %>%
+  filter(IS=="IS"|IS==polarity|is.na(IS)) %>%
   arrange(time)
 
 ms_files <- cruise_metadata$filename
