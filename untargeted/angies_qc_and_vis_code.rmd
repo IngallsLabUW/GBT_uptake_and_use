@@ -1,0 +1,1925 @@
+---
+title: "Control Script for GBT data"
+output: html_document
+---
+
+Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = TRUE)
+options(dplyr.summarise.inform=F)
+options(pillar.sigfig=7)
+library(tidyverse)
+library(data.table)
+library(pbapply)
+library(RaMS)
+library(cowplot)
+library(cluster)
+library(ggplot2)
+library(ggrepel)
+
+polarity <- "pos"
+# identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+identifier <- "cyano"
+mzxml_path <- paste0("mzXMLs_", identifier, "/")
+exp.num = 1 # 1 or 2
+if(exp.num ==2){ output_folder <- paste0("output_folder_", identifier, "/")} else {
+  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")}
+
+source("scripts/functions.R")
+cruise_metadata <- list.files( paste0("mzXMLs_", identifier, "/")) %>%
+  data.frame(filename=.) %>%
+  mutate(exp_num=str_extract(filename, "(?<=Fate)\\d(?=M)|Blk|Std")) %>%
+  mutate(type=str_extract(filename, "(?<=200605_).*?(?=_)")) %>%
+  mutate(type=ifelse(is.na(type),str_extract(filename, "(?<=200612_).*?(?=_)"),type)) %>%
+  mutate(time=str_extract(filename, "(?<=MT)\\d+|(?<=MT)long|Blk|Std")) %>%
+  mutate(time=as.numeric(ifelse(time=="long", 96, time))) %>%
+  mutate(time=ifelse(type=="Blk"|type=="Std", -1, time)) %>%
+  mutate(IS=str_extract(filename, "(?<=-)IS|pos(?=_)"),
+         IS = ifelse(is.na(IS),str_extract(filename, "(?<=-)IS|neg(?=_)"),IS)) %>%
+  mutate(tripl=str_extract(filename, "[A-C](?=.mzXML)")) %>%
+  # filter(IS=="pos"|type=="Std") %>%
+  filter(IS==polarity) %>%
+  filter(exp_num==exp.num|exp_num=="Blk"|exp_num=="Std") %>%
+  arrange(time)
+
+ms_files <- cruise_metadata$filename
+```
+
+## Angie Additions Below Here: ----------------
+
+```{r load all the data again}
+long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
+MID_df <- read.csv(paste0(output_folder, "MID_df.csv"))
+aov_df <- read.csv(paste0(output_folder, "aov_df.csv"))
+msms_df <- read.csv(paste0(output_folder, "msms_df.csv")) %>% as_tibble()
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+```
+
+
+## MID lm tests ------------
+```{r lm and ANOVA tests on all isotopologues}
+library(tidyverse)
+library(broom)
+
+if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+MID.test <- MID_df %>%
+  filter(time>=1) %>%
+  group_by(`feature`, exp_num, isotope) %>%
+  filter(sum(MID)>0) %>% 
+  filter(sum(MID!=0, na.rm = TRUE)>5) %>%
+  do(tidy(summary(lm(.$MID ~ .$time))$r.squared)) %>%
+  dplyr::rename(Rsqr = x) %>%
+  full_join(.,  MID_df %>%
+              filter(time>=1) %>%
+              ungroup() %>%
+              group_by(`feature`, exp_num, isotope) %>%
+              filter(sum(MID)>0) %>% 
+              filter(sum(MID!=0, na.rm = TRUE)>5) %>%
+              do(tidy(anova(lm(.$MID ~ .$time))))%>%
+              filter(term==".$time",
+                     !is.na(term)))  %>%
+  ungroup() %>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val<p.val.cutoff)  %>%
+  filter(!is.na(Rsqr),
+         !is.na(term))
+
+write_csv(MID.test, paste0(output_folder, "test_goodCompounds_MID_lm_significance_test.csv"))
+
+lm_anova_good <- MID.test %>%
+  filter(sig==T | Rsqr>0.9)
+
+ggplot(lm_anova_good) + geom_point(aes(x=Rsqr, y = fdr.p.val))
+```
+
+
+## dereplicate based on RT
+```{r dereplicated based on RT}
+if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+
+MID.test <- read_csv(paste0(output_folder, "test_goodCompounds_MID_lm_significance_test.csv"))
+feature_data <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
+  group_by(feature) %>%
+  summarize(mzmed=median(mz), rtmed=median(rt))
+
+
+
+lm_anova_good <- MID.test %>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val< p.val.cutoff) %>%
+  filter(sig==T | Rsqr>0.9)
+
+good.fts <- lm_anova_good %>%
+  dplyr::select(feature) %>%
+  unique() %>%
+  left_join(feature_data %>%
+              dplyr::select(feature, mzmed, rtmed) %>%
+              unique()) 
+
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+
+
+similar.good.fts <- good.fts %>%
+  mutate(rounded.rt = round(rtmed, 0)) %>%
+  ungroup() %>% 
+  group_by(rounded.rt) %>% 
+  filter(n()>1) %>%
+  left_join(stan_annotations %>%
+              dplyr::select(feature, compound_name))
+
+write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
+```
+
+```{r visualize those similar MFs}
+ft <- "FT0899"
+ft.2 <- "FT061"
+
+# ft <- stan_annotations[stan_annotations$compound_name=="Guanine", "feature"]
+# Set iso and iso_delta manually (M_area = 0, C13=1.003355, X5C13N15=1.003355*5 +0.997035)
+# iso <- "M_area"
+# iso_delta <- 0
+# iso <- "C13_area"
+# iso_delta <- 1.003355
+# iso <- "N15_area"
+# iso_delta <- 0.997035
+iso <- "N15X2C13_area"
+iso_delta <- 1.003355* 2 +0.997035 *1
+# iso <- "N15X5C13_area"
+# iso_delta <- 1.003355* 5 +0.997035 *1
+
+
+ft_df <- long_envelopes[long_envelopes$feature==ft,]
+(mz_i <- mean(ft_df$mz))
+(rt_i <- mean(ft_df$rt)/60)
+
+ft_df.2 <- long_envelopes[long_envelopes$feature==ft.2,]
+(mz_i.2 <- mean(ft_df.2$mz))
+(rt_i.2 <- mean(ft_df.2$rt)/60)
+```
+
+Chunks below are all used to visualize the peaks in various ways - edit the ft and iso above
+
+```{r plotMID wrt time, eval = F}
+MID_df %>%
+  # filter(isotope!="M_area") %>%
+  filter(feature==ft) %>%
+  ggplot() +
+  geom_line(aes(x=time, y=MID, color=isotope, group=interaction(tripl, isotope)))
+
+MID_df %>%
+  # filter(isotope!="M_area") %>%
+  filter(feature==ft.2) %>%
+  ggplot() +
+  geom_line(aes(x=time, y=MID, color=isotope, group=interaction(tripl, isotope)))
+```
+
+```{r single-feature boxplot raw data, eval = F}
+MID_df %>%
+  filter(feature==ft) %>%
+  filter(isotope==iso) %>%
+  select(feature, filename, MID, time) %>%
+  ggplot() +
+  geom_boxplot(aes(x=time, y=MID, group=time)) +
+  facet_wrap(~feature, scales = "free_y") +
+  ggtitle(iso)
+
+MID_df %>%
+  filter(feature==ft.2) %>%
+  filter(isotope=="M_area") %>%
+  select(feature, filename, MID, time) %>%
+  ggplot() +
+  geom_boxplot(aes(x=time, y=MID, group=time)) +
+  facet_wrap(~feature, scales = "free_y") +
+  ggtitle("M_area")
+```
+
+```{r msdata RaMS plotter singlecompound, eval=FALSE}
+if(!exists("msdata")){
+  if(exp.num==2){
+    msdata <- grabMSdata(files = paste0(mzxml_path, ms_files)[c(3,6,9,12,15,18)], grab_what = "MS1")} else{
+      msdata <- grabMSdata(files = paste0(mzxml_path, ms_files)[c(3,6,9,12,15,18,22)], grab_what = "MS1")
+    }
+} 
+msdata$MS1[mz%between%pmppm(mz_i, 5)] %>%
+  filter(rt%between%((rt_i+c(-1, 1))*60)) %>%
+  left_join(cruise_metadata) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  ggtitle(paste("m/z:", mz_i))  
+
+
+msdata$MS1[mz%between%pmppm(mz_i.2, 5)] %>%
+  filter(rt%between%((rt_i.2+c(-1, 1))*60)) %>%
+  left_join(cruise_metadata) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  ggtitle(paste("m/z:", mz_i.2)) 
+
+```
+
+```{r msdata RaMS plotter addisocomp}
+if(!exists("msdata")){
+  if(identifier=="pos"){
+    msdata <- grabMSdata(files = paste0("mzXMLs_pos/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")} else if (identifier =="neg"){
+      msdata <- grabMSdata(files = paste0("mzXMLs_neg/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")
+    } else if (identifier=="cyano"){
+      msdata <- grabMSdata(files = paste0("mzXMLs_cyano/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")
+    } else {print("Specify LC colum and MS mode as cyano, pos, or neg")}
+}
+rbind(
+  cbind(msdata$MS1[mz%between%pmppm(mz_i)], type=ft),
+  cbind(msdata$MS1[mz%between%pmppm(mz_i+iso_delta, 5)], type=iso)
+) %>%
+  left_join(cruise_metadata %>% select(-type)) %>%
+  filter(rt%between%((rt_i+c(-1, 1))*60)) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  facet_wrap(~type, ncol=1, scales = "free_y") +
+  ggtitle(paste("m/z:", mz_i)) 
+
+rbind(
+  cbind(msdata$MS1[mz%between%pmppm(mz_i.2)], type=ft.2),
+  cbind(msdata$MS1[mz%between%pmppm(mz_i.2+iso_delta, 5)], type=iso)
+) %>%
+  left_join(cruise_metadata %>% select(-type)) %>%
+  filter(rt%between%((rt_i.2+c(-1, 1))*60)) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  facet_wrap(~type, ncol=1, scales = "free_y") +
+  ggtitle(paste("m/z:", mz_i.2)) 
+```
+
+## re-filter based on manual curation ---------------
+```{r refilter}
+if(identifier == "cyano" & exp.num == 1){p.val.cutoff = 0.33} else if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+
+MID.test <- read_csv(paste0(output_folder, "test_goodCompounds_MID_lm_significance_test.csv"))%>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val< p.val.cutoff) 
+feature_data <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
+  group_by(feature) %>%
+  summarize(mzmed=median(mz), rtmed=median(rt))
+
+lm_anova_good <-  MID.test %>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val< p.val.cutoff) %>%
+  filter(sig==T | Rsqr>0.9)
+
+
+good.fts <- lm_anova_good %>%
+  dplyr::select(feature) %>%
+  unique() %>%
+  left_join(feature_data %>%
+              dplyr::select(feature, mzmed, rtmed) %>%
+              unique()) 
+
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+
+similar.good.fts.to.keep <- read_csv(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))
+
+unique.good.fts <- good.fts %>%
+  full_join(similar.good.fts.to.keep, by= "feature")  %>%
+  mutate(rounded.rt = round(rtmed.x, 0))  %>%
+  filter(is.na(keep) | keep=="y") %>%
+  dplyr::select(feature, rtmed.x, mzmed.x,keep, compound_name) %>%
+  arrange(rtmed.x)
+
+write_csv(unique.good.fts, path = paste0(output_folder,"Check_these_Features.csv"))
+```
+
+
+##  print out pdf to check good features -----
+```{r print report of unique good features}
+isotope.mass.offsets = read_csv("scripts/isotope_mass_offsets.csv")
+pdf(file = paste0(output_folder,"test_CheckThese_Plots.pdf"))
+for(i in 1:nrow(unique.good.fts)){
+  this.ft <- unique.good.fts$feature[i]
+  ft_df <- long_envelopes[long_envelopes$feature==this.ft,]
+  mz_i <- mean(ft_df$mz)
+  rt_i <- mean(ft_df$rt)/60
+  these.isotopes = MID.test %>% filter(feature==this.ft,
+                                       sig)
+  p1 <- MID_df %>%
+    # filter(isotope!="M_area") %>%
+    filter(feature==this.ft,
+           time>=0) %>%
+    ggplot() +
+    geom_line(aes(x=time, y=MID, color=isotope,
+                  group=interaction(tripl, isotope))) +
+    ggtitle(paste(this.ft, unique.good.fts$compound_name[i])) 
+  p2 <- msdata$MS1[mz%between%pmppm(mz_i, 5)] %>%
+    filter(rt%between%((rt_i+c(-1, 1))*60)) %>%
+    left_join(cruise_metadata) %>%
+    ggplot() +
+    geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+    geom_vline(xintercept = round(min(ft_df$rt),1), linetype = 'dashed') +
+    geom_vline(xintercept = round(max(ft_df$rt),1), linetype = 'dashed') +
+    ggtitle(paste("m/z:", round(mz_i,4),
+                  "--",
+                  paste(these.isotopes$isotope,collapse   = ";")))
+  if(length(these.isotopes$isotope)==1 & these.isotopes$isotope=="M_area"){
+    print(plot_grid(p1, p2, ncol = 1))
+  } else {
+    these.isotopes <- these.isotopes %>%
+      filter(isotope!="M_area") %>%
+      left_join(isotope.mass.offsets) %>%
+      slice_sample(n = 1)
+    
+    p3 <- msdata$MS1[mz%between%pmppm(mz_i +
+                                        these.isotopes$mass_diff, 5)] %>%
+      filter(rt%between%((rt_i+c(-1, 1))*60)) %>%
+      left_join(cruise_metadata) %>%
+      ggplot() +
+      geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+      geom_vline(xintercept = round(min(ft_df$rt),1), linetype = 'dashed') +
+      geom_vline(xintercept = round(max(ft_df$rt),1), linetype = 'dashed') +
+      ggtitle(paste("iso:",these.isotopes$isotope))
+    
+    print(plot_grid(p1, p2, p3, ncol = 1))
+  }
+}
+dev.off()
+```
+
+## read in curated list, get MSMS -------------
+```{r curated msms getter}
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+
+msmsdata <- grabMSdata(list.files(mzxml_path, pattern = "DDA", full.names = TRUE))
+
+msms_df <- curated.MFs %>%
+  rename(mzmed = mzmed.x,
+         rtmed= rtmed.x) %>%
+  dplyr::select(-keep) %>%
+  mutate(has_msms=mapply(function(mzmed, rtmed){
+    msms_eic <- msmsdata$MS2[premz%between%pmppm(mzmed, 5)]
+    msms_frags <- msms_eic[rt%between%((rtmed + c(-60, 60)))]
+    top_frags <- msms_frags[!fragmz%between%pmppm(mzmed, 5)][order(-int)]
+    top_frags %>%
+      filter(int>quantile(int)[2]) %>%
+      mutate(fragint=paste(round(fragmz, digits = 5), round(int), sep = ":")) %>%
+      summarize(msms=paste0(fragint, collapse = "; ")) %>%
+      pull(msms)
+  }, mzmed, rtmed))
+print(msms_df, n=Inf)
+
+write.csv(msms_df, file = paste0(output_folder, "msms_df_curated.csv"), row.names = FALSE)
+
+## look just for gly-GBT
+# test.MF = data.frame("feature" = c("Labeled_FT328","labled_GBT"),
+#                      "rtmed" = c(669.0691,478.6513),
+#                      "mzmed" = c(181.1215,124.1002))
+# test.msms_df <- test.MF %>%
+#   mutate(has_msms=mapply(function(mzmed, rtmed){
+#     msms_eic <- msmsdata$MS2[premz%between%pmppm(mzmed, 5)]
+#     msms_frags <- msms_eic[rt%between%((rtmed + c(-60, 60)))]
+#     top_frags <- msms_frags[!fragmz%between%pmppm(mzmed, 5)][order(-int)]
+#     top_frags %>%
+#       filter(int>quantile(int)[2]) %>%
+#       mutate(fragint=paste(round(fragmz, digits = 5), round(int), sep = ":")) %>%
+#       summarize(msms=paste0(fragint, collapse = "; ")) %>%
+#       pull(msms)
+#   }, mzmed, rtmed))
+# source("MSMS.plotter.R")
+# msms.plotter.angie(ms.ms.text = filter(test.msms_df, feature=="Labeled_FT328")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ")
+# msms.plotter.angie(ms.ms.text = filter(test.msms_df, feature=="labled_GBT")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ")
+# msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT077")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ")
+```
+
+## get curated list of isotopologues, look for miss-integrations or outliers, clean data ----------
+```{r recalculate MIDs}
+if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+## recalculate MIDs for curated MFs-------
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+MID.test <- read_csv(paste0(output_folder,"test_goodCompounds_MID_lm_significance_test.csv"))  %>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val< p.val.cutoff)
+
+## find situations where an isotopologue was only found once for a given timepoint, replace those area values with 0s
+long_envelopes.trim <- long_envelopes %>%
+  ## get rid of bad MFs, blank samples
+  filter(!grepl("Blk",filename),
+         feature %in% curated.MFs$feature,
+         iso_area > 0)  %>%
+  ## set isotope order
+  mutate(isotope=factor(isotope, levels = unique(isotope))) %>%
+  left_join(cruise_metadata, by = "filename") %>%
+  group_by(feature, time, isotope) %>%
+  filter(n()==1) %>%
+  mutate(new.area = 0) %>%
+  ungroup() %>%
+  dplyr::select(new.area, feature, isotope, filename) %>%
+  full_join(long_envelopes  %>%
+              filter(!grepl("Blk",filename),
+                     feature %in% curated.MFs$feature) %>%
+              mutate(isotope=factor(isotope, levels = unique(isotope)))) %>%
+  mutate(iso_area = ifelse(!is.na(new.area),new.area,iso_area)) %>%
+  dplyr::select(-new.area) 
+
+## calculate MID
+MID_trim <- long_envelopes.trim %>%
+  group_by(feature, filename ) %>%
+  mutate(total_envelope=sum(iso_area, na.rm = TRUE)) %>%
+  ungroup() %>% 
+  group_by(feature, isotope, filename) %>%
+  mutate(MID=iso_area/total_envelope*100) %>% 
+  select(feature, filename, isotope, MID) %>%
+  ungroup() %>%
+  left_join(cruise_metadata, by = "filename")
+
+MID_cv = MID_trim %>%
+  group_by(time, feature, isotope) %>%
+  summarise(cv = sd(MID)/mean(MID)) %>%
+  filter(!is.nan(cv))
+ggplot(MID_cv)+
+  geom_boxplot(aes(y = cv))
+
+## find situations where an isotopologue was only found twice for a given timepoint
+long_envelopes.just.two = long_envelopes.trim %>%
+  filter(!grepl("Blk",filename),
+         feature %in% curated.MFs$feature,
+         iso_area > 0) %>%
+  left_join(cruise_metadata, by = "filename") %>%
+  group_by(feature, time, isotope) %>%
+  filter(n()==2) %>%
+  left_join(MID_trim) %>%
+  ungroup() 
+
+if(identifier=="neg" & polarity=="neg" & exp.num==1){
+  MID_trimmer = MID_trim %>%
+    dplyr::select(feature,filename,isotope,MID,exp_num,type,time,IS,tripl)
+  
+} else {
+  ## where the difference between MID is small, replace the outlier with NA
+  toss.0.datapoints.with.NA.for.these = long_envelopes.just.two %>%
+    group_by(feature, time, isotope) %>%
+    mutate(difference = (max(MID)-min(MID)),
+           cv = sd(MID)/mean(MID)) %>%
+    filter(!(difference > 1 &
+               cv > 0.3))
+  long_envelopes.trim.2 <- long_envelopes.trim %>%
+    left_join(cruise_metadata, by = "filename") %>%
+    left_join(toss.0.datapoints.with.NA.for.these %>%
+                ungroup() %>%
+                dplyr::select(feature, isotope, time, cv) %>%
+                unique) %>%
+    mutate(iso_area = ifelse(iso_area==0 & !is.na(cv),NA, iso_area)) %>%
+    dplyr::select(feature:iso_area)
+  
+  
+  ## where the difference between MID is big, see if there is a significant trend with those, if not, remove those data, if so, replace the outlier with NA
+  ditch.these.unreliable.MF.isos = long_envelopes.just.two %>%
+    group_by(feature, time, isotope) %>%
+    mutate(difference = (max(MID)-min(MID)),
+           cv = sd(MID)/mean(MID)) %>%
+    filter(difference > 1 &
+             cv > 0.3) %>%
+    left_join(MID.test %>%
+                dplyr::select(feature, isotope,sig)) %>%
+    ungroup()
+  
+  long_envelopes.trim.3 <- long_envelopes.trim.2 %>%
+    left_join(cruise_metadata, by = "filename") %>%
+    left_join(ditch.these.unreliable.MF.isos %>%
+                dplyr::select(feature, isotope, time, cv, sig) %>%
+                unique()) %>%
+    mutate(iso_area2 = ifelse(is.na(cv),iso_area, 
+                              ifelse(is.na(sig),0, 
+                                     ifelse(sig==FALSE, 0,
+                                            ifelse((sig==TRUE & iso_area==0), NA,
+                                                   iso_area))))) %>%
+    mutate(iso_area = iso_area2) %>%
+    dplyr::select(feature:iso_area)
+  
+  if(length(unique(long_envelopes.trim$feature))==1){
+    long_envelopes.trim.3 = long_envelopes.trim
+  }
+  ## calculate MID again
+  MID_trimmer <- long_envelopes.trim.3 %>%
+    group_by(feature, filename ) %>%
+    mutate(total_envelope=sum(iso_area, na.rm = TRUE)) %>%
+    ungroup() %>% 
+    group_by(feature, isotope, filename) %>%
+    mutate(MID=iso_area/total_envelope*100) %>% 
+    select(feature, filename, isotope, MID) %>%
+    ungroup() %>%
+    left_join(cruise_metadata, by = "filename")
+}
+
+## plot a boxplot of cvs -----
+MID_cv = MID_trimmer %>%
+  group_by(time, feature, isotope) %>%
+  summarise(cv = sd(MID, na.rm = T)/mean(MID, na.rm = T)) %>%
+  filter(!is.nan(cv))
+ggplot(MID_cv)+
+  geom_boxplot(aes(y = cv))
+
+Check.me.cv.high = MID_cv %>%
+  filter(cv > (mean(MID_cv$cv) + 2 * sd(MID_cv$cv)))
+
+## ok, run with this even if maybe we've still got some noise
+write_csv(MID_trimmer, path = paste0(output_folder,"Tidy_MID_df.csv"))
+
+```
+
+
+
+## dereplicate based on RT
+```{r dereplicated based on RT}
+if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+MID.test <- read_csv(paste0(output_folder, "test_goodCompounds_MID_lm_significance_test.csv")) %>%
+  mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+         sig = fdr.p.val< p.val.cutoff)
+feature_data <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
+  group_by(feature) %>%
+  summarize(mzmed=median(mz), rtmed=median(rt))
+
+
+
+lm_anova_good <- MID.test %>%
+  filter(sig==T | Rsqr>0.9)
+
+good.fts <- lm_anova_good %>%
+  dplyr::select(feature) %>%
+  unique() %>%
+  left_join(feature_data %>%
+              dplyr::select(feature, mzmed, rtmed) %>%
+              unique()) 
+
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+
+
+similar.good.fts <- good.fts %>%
+  mutate(rounded.rt = round(rtmed, 0)) %>%
+  ungroup() %>% 
+  group_by(rounded.rt) %>% 
+  filter(n()>1) %>%
+  left_join(stan_annotations %>%
+              dplyr::select(feature, compound_name))
+
+# write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
+```
+
+## re-do stats on MIDs now that they are cleaned up
+```{r lm and ANOVA tests on tidy isotopologues}
+if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+
+
+library(tidyverse)
+library(broom)
+
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
+
+if(nrow(MID_df>0)){  
+  MID.test <- MID_df %>%
+    filter(feature %in% curated.MFs$feature,
+           time >= -1,
+           !is.na(MID)) %>%
+    group_by(`feature`, exp_num, isotope) %>%
+    filter(sum(MID, na.rm = TRUE) > 0,
+           sum(MID!=0, na.rm = TRUE)>5) %>%
+    do(tidy(summary(lm(.$MID ~ .$time))$r.squared)) %>%
+    dplyr::rename(Rsqr = x) %>%
+    full_join(.,  MID_df %>%
+                filter(time >= -1) %>%
+                ungroup() %>%
+                group_by(`feature`, exp_num, isotope) %>%
+                filter(sum(MID, na.rm = TRUE)>0) %>% 
+                filter(sum(MID!=0, na.rm = TRUE)>5) %>%
+                do(tidy(anova(lm(.$MID ~ .$time))))%>%
+                filter(term==".$time",
+                       !is.na(term)))   %>% 
+    ungroup() %>%
+    mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
+           sig = fdr.p.val< p.val.cutoff)  %>%
+    filter(!is.na(Rsqr),
+           !is.na(term))
+} else {
+  MID.test = data.frame(matrix(ncol=12, nrow=0,
+                               dimnames=list(NULL, c("feature",	"exp_num",	
+                                                     "isotope",	"Rsqr",	"term",
+                                                     "df",	"sumsq",	"meansq",
+                                                     "statistic",	"p.value",
+                                                     "fdr.p.val",	"sig"))))
+}
+write_csv(MID.test, paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv"))
+
+lm_anova_good <- MID.test %>%
+  filter(sig==T | Rsqr>0.9)
+
+ggplot(lm_anova_good) + geom_point(aes(x=Rsqr, y = fdr.p.val))
+```
+
+## make a table of MFs that have trends in their isotopologues
+```{r trends are real table maker}
+long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv"))  %>%
+  filter(keep_final == 'y')
+MID.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv"))
+MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
+
+
+(n.total.MFs = length(unique(long_envelopes$feature)))
+final.good.MFs = long_envelopes %>%
+  left_join(stan_annotations %>%
+              dplyr::select(compound_name, feature)) %>%
+  left_join(curated.MFs %>% dplyr::select(keep_final, reason, feature)) %>%
+  filter((feature %in% curated.MFs$feature)) %>%
+  left_join(MID.test %>% dplyr::select(feature, isotope, sig)) %>%
+  filter(sig == T,
+         isotope != "M_area")
+if(identifier=="cyano"){
+  final.good.MFs = final.good.MFs %>%
+    filter(compound_name != "Allopurinol"|is.na(compound_name))
+}
+
+no.id.mfs = final.good.MFs %>% 
+  filter(is.na(compound_name),
+         isotope != "M_area")
+if(identifier=="pos" & exp.num ==1){
+  no.id.mfs = no.id.mfs %>%
+    filter(feature != 'FT0250')
+}
+no.id.mfs.w.multiple.isotopes = no.id.mfs %>%
+  dplyr::select(feature, isotope) %>%
+  unique() %>%
+  group_by(feature) %>%
+  filter(isotope != "M_area",
+         isotope != "C13_area",
+         isotope != "N15_area")
+no.id.mfs.w.more.than.one.isotopologue <- no.id.mfs %>%
+  dplyr::select(feature, isotope)  %>%
+  filter(isotope != "M_area") %>%
+  unique() %>%
+  group_by(feature) %>%
+  filter(n()>1)
+
+(n.final.good.MFs.w.isotope.trends <- length(unique(final.good.MFs$feature)))
+(n.final.good.MFs.wo.IDs <- length(unique(no.id.mfs$feature)))
+(n.final.good.MFs.wo.IDs.w.multipleisotopologues.or.isotopes <- length(unique(c(no.id.mfs.w.multiple.isotopes$feature, no.id.mfs.w.more.than.one.isotopologue$feature))))
+
+if(exp.num==1){
+  final.good.MFs.overlap.exp2 = final.good.MFs %>%
+    filter(grepl("exp2 FT",reason))
+  n.final.overlap.w.exp2 = length(unique(final.good.MFs.overlap.exp2$feature))
+  
+  no.id.mfs.overlap.w.2 = final.good.MFs.overlap.exp2 %>% 
+    filter(is.na(compound_name),
+           isotope != "M_area")
+  if(identifier=="pos"){
+    no.id.mfs.overlap.w.2 = no.id.mfs.overlap.w.2 %>%
+      filter(feature != 'FT0250')
+  }
+  n.final.overlap.w.exp2.no.id = length(unique(no.id.mfs.overlap.w.2$feature))
+}                                                                                
+
+
+this.row = data.frame("Experiment"= exp.num, "Fraction" = identifier, "Polarity" = polarity, 
+                      "Number_MFs" = n.total.MFs, "Number_MFs_with_significant_isotopologue_trends" = n.final.good.MFs.w.isotope.trends,
+                      "Number_unkown_MFs_with_significant_isotopologue_trends" = n.final.good.MFs.wo.IDs,
+                      "Number_unkown_MFs_with_significant_isotopologue_trends_multipleIsotopes" = n.final.good.MFs.wo.IDs.w.multipleisotopologues.or.isotopes,
+                      "Number_MFs_with_significant_isotopologue_trends_inBothExperiments" = n.final.overlap.w.exp2,
+                      "Number_unkown_MFs_with_significant_isotopologue_trends_inBothExperiments" = n.final.overlap.w.exp2.no.id)
+write_csv(this.row, paste0(output_folder,"MF_summary_table.csv"))
+
+## group mass features based on what isotopes they have significant trends in
+final.good.MFs.table = final.good.MFs %>%
+  filter(sig ==T,
+         isotope != "M_area") %>%
+  dplyr::select(feature, compound_name, isotope) %>%
+  unique()%>%
+  mutate(Feature_ID = ifelse(is.na(compound_name),feature,compound_name))%>%
+  dplyr::select(Feature_ID, isotope)
+
+(t1 = table(final.good.MFs.table$isotope))
+
+final.good.MFs.table.condensed = final.good.MFs.table %>%
+  group_by(Feature_ID) %>%
+  arrange(isotope) %>%
+  summarise(all.isos = paste(isotope, collapse = ";")) %>%
+  ungroup() %>% group_by(all.isos) %>%
+  summarise(n.mfs = n(),
+            all.MFs = paste(Feature_ID, collapse = ";"))
+
+write_csv(final.good.MFs.table.condensed, paste0(output_folder,"Significant_trends_table.csv"))
+```
+
+
+## get curated list of isotopologues and make a suite of heatmaps
+```{r currated heatmaps}
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
+MID_sig.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+heatmap.Angie <- function(MID_df,this.isotope = "M_area", cut.here = NULL){
+  data_mat_iso <- MID_df %>%
+    filter(feature %in% curated.MFs$feature) %>%
+    filter(time>=0) %>%
+    filter(isotope==this.isotope) %>%
+    left_join(stan_annotations, by="feature") %>%
+    left_join(MID_sig.test) %>%
+    mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+    mutate(feature = ifelse(is.na(sig)|sig==FALSE,feature,paste(feature, " * "))) %>%
+    select(-compound_name) %>%
+    group_by(feature) %>% 
+    filter(sum(MID!=0, na.rm = TRUE) > 5 &
+             sum(MID==100, na.rm = TRUE) < 6) %>%
+    # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/IQR(MID, na.rm = TRUE)) %>%
+    # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/mad(MID, na.rm = TRUE)) %>%
+    mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>% ##z - score - super high or super low is still meaningful even though we can't use the sd as the comparison to a standard curve
+    # mutate(delta_avg=MID) %>%
+    select(feature, filename, delta_avg) %>%
+    left_join(cruise_metadata, by="filename") %>%
+    arrange(feature, time) %>%
+    mutate(short_name=factor(paste(time, tripl, sep = "_"))) %>%
+    select(feature, short_name, delta_avg) %>% 
+    pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+    as.data.frame() %>%
+    `rownames<-`(.$feature) %>%
+    select(-feature) %>%
+    as.matrix()
+  
+  hc <- data_mat_iso %>%
+    dist(method = "manhattan", diag = TRUE, upper = TRUE) %>%
+    hclust()
+  
+  plot(as.dendrogram(hc))
+  
+  if(is.null(cut.here)){
+    
+    heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", 
+                         file = paste0(output_folder,this.isotope,"_heatmap.html"))
+  } else{
+    ## cuttree
+    dend.groups = cutree(hc, h = cut.here )
+    
+    ## heatmap
+    heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", col_side_colors = dend.groups,
+                         file = paste0(output_folder,"clustering_and_heatmaps/",this.isotope,"_heatmap.html"))
+  }
+  
+  ## clara clustering
+  
+  Ave.Silh.Width = c()
+  k = c()
+  if(nrow(data_mat_iso) < 21){top.end = nrow(data_mat_iso) -1 } else {top.end = 20}
+  for(i in 2:top.end){
+    Metabcl.clara  <- clara(data_mat_iso, k = i, metric = "manhattan", stand = F,
+                            samples = nrow(data_mat_iso), correct.d = T)
+    Ave.Silh.Width = c(Ave.Silh.Width, Metabcl.clara$silinfo$avg.width)
+    k = c(k, i)
+  }
+  jpeg(file=paste0(output_folder,"clustering_and_heatmaps/",this.isotope,"_SilhouetteWidthVsNoClusters.jpeg"),
+       width = 5, height = 5, units = "in", res = 72)
+  plot(k, Ave.Silh.Width, type = "p", xlab = "No. clusters")
+  dev.off()
+  
+  low.number = which(Ave.Silh.Width[1:min(c(6,length(Ave.Silh.Width)))] ==
+                       (max(Ave.Silh.Width[1:min(c(6,length(Ave.Silh.Width)))]))) +1
+  
+  Metabcl.clara.low <- clara(data_mat_iso, k = low.number, metric = "manhattan" , stand = F, 
+                             samples = nrow(data_mat_iso), correct.d = T)
+  
+  clust.membership <- data.frame(feature = names(Metabcl.clara.low$clustering), Cluster_low = Metabcl.clara.low$clustering) 
+  if(top.end > 5){
+    high.number = which(Ave.Silh.Width[4:min(c(19,length(Ave.Silh.Width)))]==(max(Ave.Silh.Width[4:min(c(19,length(Ave.Silh.Width)))]))) + 5
+    
+    Metabcl.clara.high <- clara(data_mat_iso, k = high.number, metric = "manhattan" , stand = F, 
+                                samples = nrow(data_mat_iso), correct.d = T)
+    clust.membership <- clust.membership %>%
+      full_join(.,data.frame(feature = names(Metabcl.clara.high$clustering), Cluster_high = Metabcl.clara.high$clustering) )
+  } else {
+    clust.membership <- clust.membership %>% mutate(Cluster_high = NA )
+  }
+  
+  if(!is.null(cut.here)){
+    
+    new.clusts = data.frame(dend.groups)
+    new.clusts$feature = names(dend.groups)
+    clust.membership <- clust.membership %>% full_join(new.clusts)
+  } else {
+    clust.membership <- clust.membership %>% mutate(dend.groups = NA )
+  }
+  heatmap.data = data_mat_iso %>%
+    as.data.frame() %>%
+    mutate(feature = rownames(data_mat_iso)) %>%
+    full_join(clust.membership) %>%
+    gather(Sample.ID, Value, -feature, -Cluster_low, -Cluster_high, -dend.groups) %>%
+    left_join(MID_df %>%
+                filter(feature %in% curated.MFs$feature) %>%
+                filter(time>=0) %>%
+                filter(isotope==this.isotope) %>%
+                left_join(stan_annotations, by="feature") %>%
+                mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+                select(-compound_name) %>%
+                group_by(feature) %>% 
+                filter(sum(MID!=0, na.rm = TRUE) > 6 &
+                         sum(MID==100, na.rm = TRUE) < 6) %>%
+                mutate(Sample.ID=factor(paste(time, tripl, sep = "_"))) %>%
+                dplyr::select(Sample.ID, MID, feature, isotope, filename))  %>%
+    unique() %>%
+    arrange(Cluster_low) 
+  write_csv(heatmap.data, path = paste0(output_folder,"clustering_and_heatmaps/",this.isotope,"_clusterMembership.csv"))
+}
+
+heatmap.Angie(MID_df = MID_df, this.isotope = "C13_area", cut.here = 16.5)
+heatmap.Angie(MID_df = MID_df, this.isotope = "X2C13_area", cut.here = 13.5)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15_area",  cut.here = 17)
+heatmap.Angie(MID_df = MID_df, this.isotope = "X3C13_area",  cut.here = 17)
+heatmap.Angie(MID_df = MID_df, this.isotope = "X4C13_area",  cut.here = 17)
+heatmap.Angie(MID_df = MID_df, this.isotope = "X5C13_area",  cut.here = 17)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15X1C13_area",  cut.here = 10)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15X2C13_area",  cut.here = 9)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15X3C13_area",  cut.here = 14)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15X4C13_area",  cut.here = 10)
+heatmap.Angie(MID_df = MID_df, this.isotope = "N15X5C13_area",  cut.here = 10)
+
+```
+
+## make a massive heatmap
+```{r massive heatmap test}
+massive.data_mat_iso <- MID_df %>%
+  filter(feature %in% curated.MFs$feature) %>%
+  filter(time>=0) %>%
+  # filter(isotope==this.isotope) %>%
+  left_join(stan_annotations, by="feature") %>%
+  left_join(MID_sig.test) %>%
+  mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+  mutate(feature = ifelse(is.na(sig)|sig==FALSE,feature,paste(feature, " * "))) %>%
+  select(-compound_name) %>%
+  group_by(feature) %>% 
+  filter(sum(MID!=0, na.rm = TRUE) > 5 &
+           sum(MID==100, na.rm = TRUE) < 6) %>%
+  # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/IQR(MID, na.rm = TRUE)) %>%
+  # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/mad(MID, na.rm = TRUE)) %>%
+  mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>%
+  # mutate(delta_avg=MID) %>%
+  select(feature, isotope, filename, delta_avg) %>%
+  left_join(cruise_metadata, by="filename") %>%
+  arrange(feature, time, isotope) %>%
+  mutate(short_name=factor(paste(time, tripl, isotope, sep = "_"))) %>%
+  select(feature, short_name, delta_avg) %>% 
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>%
+  `rownames<-`(.$feature) %>%
+  select(-feature) %>%
+  as.matrix()
+
+
+hc <- massive.data_mat_iso %>%
+  dist(method = "manhattan", diag = TRUE, upper = TRUE) %>%
+  hclust()
+
+heatmap.data = massive.data_mat_iso %>%
+  as.data.frame() %>%
+  mutate(feature = rownames(massive.data_mat_iso)) %>%
+  gather(Sample.ID, Value, -feature) %>%
+  left_join(MID_df %>%
+              filter(feature %in% curated.MFs$feature) %>%
+              filter(time>=0) %>%
+              left_join(stan_annotations, by="feature") %>%
+              mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+              select(-compound_name) %>%
+              group_by(feature) %>% 
+              filter(sum(MID!=0, na.rm = TRUE) > 6 &
+                       sum(MID==100, na.rm = TRUE) < 6) %>%
+              mutate(Sample.ID=factor(paste(time, tripl,isotope, sep = "_")))%>%
+              dplyr::select(Sample.ID, MID, feature, isotope, filename))  %>%
+  unique()
+
+heatmaply::heatmaply(t(massive.data_mat_iso), Rowv=FALSE, dist_method="manhattan")
+
+
+```
+
+
+## look through clusters
+```{r group clusters}
+clusts.X1C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "C13_area_clusterMembership.csv")) %>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>%
+  mutate(isotope = "X1C13")
+clusts.X2C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "X2C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X2C13")
+clusts.X3C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "X3C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope =  "X3C13")
+clusts.X4C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "X4C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope =  "X4C13")
+clusts.X5C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "X5C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope =  "X5C13")
+
+clusts.X1N15 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                "N15_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X1N15")
+
+clusts.X1N15X1C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                     "N15X1C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope =  "X1N15X1C13")
+
+clusts.X1N15X2C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                     "N15X2C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X1N15X2C13")
+clusts.X1N15X3C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                     "N15X3C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X1N15X3C13")
+clusts.X1N15X4C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                     "N15X4C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X1N15X4C13")
+clusts.X1N15X5C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
+                                     "N15X5C13_area_clusterMembership.csv"))%>%
+  dplyr::select(feature, Cluster_low, Cluster_high, dend.groups) %>%
+  unique() %>% mutate(isotope = "X1N15X5C13")
+```
+
+## plot msms
+```{r plot msms}
+source("MSMS.plotter.R")
+msms_df = read_csv(paste0(output_folder, "msms_df_curated.csv"))
+
+if(identifier=="pos"){
+  
+  if(exp.num==2){
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT633")$has_msms, rel.int.cutoff = 0, seped.by = "; ")
+    
+    
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT243")$has_msms, rel.int.cutoff = 0, seped.by = "; ")
+    
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT332")$has_msms, rel.int.cutoff = 0, seped.by = "; ")
+        msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT391")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ") + ggtitle("Phosphocholine")
+
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT600")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ") + ggtitle("mycosporine-glycine")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT807")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ") + ggtitle("palythenic acid")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT830")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ") + ggtitle("porphyra-334")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT596")$has_msms, rel.int.cutoff = 0.04, seped.by = "; ") + ggtitle("palythine")
+
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT814")$has_msms, rel.int.cutoff = 0, seped.by = "; ") + ggtitle("shinorine")
+
+
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT418")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT633")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+    # msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT600")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+    # msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT807")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT121")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT064")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+  }
+  if(exp.num==1){
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0769")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ") + ggtitle("userjirine")
+
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0621")$has_msms, rel.int.cutoff = 0.1, seped.by = "; ")+ ggtitle("mycosporine-glycine")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0887")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ") + ggtitle("palythenic acid")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0930")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")+ ggtitle("porphyra-334")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0614")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")+ ggtitle("palythine")
+    msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0899")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ") + ggtitle("shinorine")
+
+  }
+}
+if(identifier=="cyano"){
+  msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0337")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+  msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0446")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+  msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT0302")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+}
+if(identifier == "neg"){
+  msms.plotter.angie(ms.ms.text = filter(msms_df, feature=="FT012")$has_msms, rel.int.cutoff = 0.2, seped.by = "; ")
+  
+}
+```
+
+## plot just select MFs
+```{r FT238 and GBT}
+old.wd = getwd()
+setwd(output_folder)
+This.MF = c("FT328", "FT077")
+area.plot = ggplot(long_envelopes %>% filter(feature %in% This.MF) %>%
+                     left_join(cruise_metadata) %>%
+                     filter(time >= 0) %>%
+                     group_by(feature, isotope, time) %>%
+                     summarise(iso_area.sd = sd(iso_area, na.rm = T),
+                               iso_area = mean(iso_area, na.rm = T))) +
+  geom_line(aes(x = time, y = iso_area, color = isotope)) +
+  geom_errorbar(aes(x = time, ymin = iso_area-iso_area.sd, ymax = iso_area+iso_area.sd, color = isotope))+
+  facet_wrap(~feature, scales = "free_y") 
+plotly.area.plot = plotly::ggplotly(area.plot)
+file.path.to.save =  paste0(paste(This.MF, collapse = "_"),"_areaPlot.html")
+htmlwidgets::saveWidget(plotly.area.plot, file.path.to.save)
+
+MID.plot = ggplot(MID_df %>% filter(feature %in% This.MF) %>%
+                    filter(time >= 0)%>%
+                    group_by(feature, isotope, time) %>%
+                    summarise(MID.sd = sd(MID, na.rm = T),
+                              MID = mean(MID, na.rm = T))) +
+  geom_line(aes(x = time, y = MID, color = isotope)) +
+  geom_errorbar(aes(x = time, ymin = MID-MID.sd, ymax = MID+MID.sd, color = isotope))+
+  facet_wrap(~feature, scales = "free_y")
+plotly.MID.plot = plotly::ggplotly(MID.plot)
+file.path.to.save =  paste0(paste(This.MF, collapse = "_"),"_MIDPlot.html")
+htmlwidgets::saveWidget(plotly.MID.plot, file.path.to.save)
+
+setwd("..")
+```
+
+## make a tidy table of MFs that change
+This should have: Identifier (column, ionization, MF number), mz, rt, name if known, isotopes that change significantly, msms
+```{r tidytable}
+long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
+MID.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv"))
+MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+msms_df.trim = read.csv(paste0(output_folder,"msms_df_curated.csv"))
+
+isotope.key = data.frame(isotope = c("C13_area","M_area","N15_area","N15X1C13_area","N15X2C13_area","N15X3C13_area","N15X4C13_area",
+                                      "N15X5C13_area", "X2C13_area","X3C13_area","X4C13_area","X5C13_area"),
+                          C.lab = c(1,0,0,1,2,3,4,5,2,3,4,5), 
+                          N.lab = c(0,0,1,1,1,1,1,1,0,0,0,0))
+
+final.good.MFs = long_envelopes %>%
+  left_join(stan_annotations %>%
+              dplyr::select(compound_name, feature)) %>%
+  left_join(curated.MFs %>% dplyr::select(keep_final, reason, feature)) %>%
+  filter((feature %in% curated.MFs$feature)) %>%
+  left_join(MID.test %>% dplyr::select(feature, isotope, sig)) %>%
+  filter(sig == T,
+         isotope != "M_area")
+if(identifier == "cyano"){
+  final.good.MFs =    final.good.MFs %>%
+    filter(compound_name!="Allopurinol"|is.na(compound_name)) 
+}
+if(nrow(final.good.MFs)>0){
+  final.good.MFs =    final.good.MFs %>%
+    mutate(compound_name = ifelse(grepl("matches",reason),
+                                  paste(compound_name, 
+                                        sub(".* - ", "", reason), sep = ": "),
+                                  compound_name)) %>%
+    dplyr::select(-filename, -iso_area, -keep_final, -sig, -reason, -mz, -rt) %>%
+    unique() %>%
+    left_join(isotope.key) %>%
+    mutate(new.isotope = paste0("13C-",
+                               C.lab, " 15N-",N.lab)) %>%
+    group_by(feature, compound_name) %>%
+    summarise(isotopes = paste(new.isotope, collapse  = ";")) %>%
+    left_join(msms_df.trim %>% dplyr::select(feature, mzmed,rtmed,has_msms)) %>%
+    mutate(LC.column = identifier,
+           MS.ionization = polarity) %>%
+    dplyr::select(LC.column, MS.ionization, feature, mzmed,
+                  rtmed, compound_name, isotopes, has_msms) %>%
+    dplyr::rename(isotopes_w_trends = isotopes,
+                  mz = mzmed,
+                  rt = rtmed) %>%
+    mutate(Experiment = ifelse(exp.num==2,"Fate2","Fate1"))
+} 
+write_csv(final.good.MFs, paste0(output_folder,"temp.table.csv"))
+```
+
+## combine tables from different fractions
+```{r table.combiner}
+isotope.key = data.frame(isotope = c("C13_area","M_area","N15_area","N15X1C13_area","N15X2C13_area","N15X3C13_area","N15X4C13_area",
+                                      "N15X5C13_area", "X2C13_area","X3C13_area","X4C13_area","X5C13_area"),
+                          C.lab = c(1,0,0,1,2,3,4,5,2,3,4,5), 
+                          N.lab = c(0,0,1,1,1,1,1,1,0,0,0,0))
+mz.diffs = read_csv("scripts/isotope_mass_offsets.csv")
+
+## cyano 2
+temp.polarity <- "pos"
+temp.identifier <- "cyano" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+temp.output_folder <- paste0("output_folder_", temp.identifier, "/")
+exp.num = 2
+
+cyano.tab.total = read_csv(paste0(temp.output_folder,"temp.table.csv")) %>%
+  mutate(Experiment = exp.num)
+cyano.tab.sum = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+cyano.tab.MIDs = read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv"))%>%
+  right_join(., cyano.tab.total %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = mz+mass_diff,
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name)
+
+
+## cyano 1
+temp.polarity <- "pos"
+temp.identifier <- "cyano" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 1
+temp.output_folder <- paste0("output_folder_", temp.identifier, "_exp",exp.num,"/")
+
+cyano.tab.total1 = read_csv(paste0(temp.output_folder,"temp.table.csv")) %>%
+  mutate(Experiment = exp.num)
+cyano.tab.sum1 = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+cyano.tab.MIDs1 =  read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv"))%>%
+  right_join(., cyano.tab.total1 %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = mz+mass_diff,
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name)
+
+
+## pos 2
+polarity <- "pos"
+temp.identifier <- "pos" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 2
+temp.output_folder <- paste0("output_folder_", temp.identifier, "/")
+
+pos.tab.total = read_csv(paste0(temp.output_folder,"temp.table.csv"))%>%
+  mutate(Experiment = exp.num)
+pos.tab.sum = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+pos.tab.MIDs = read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv"))%>%
+  right_join(., pos.tab.total %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = mz+mass_diff,
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name)
+
+## pos 1
+polarity <- "pos"
+temp.identifier <- "pos" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 1
+temp.output_folder <- paste0("output_folder_", temp.identifier, "_exp",exp.num,"/")
+
+pos.tab.total1 = read_csv(paste0(temp.output_folder,"temp.table.csv"))%>%
+  mutate(Experiment = exp.num)
+pos.tab.sum1 = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+pos.tab.MIDs1 =  read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv"))%>%
+  right_join(., pos.tab.total1 %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = mz+mass_diff,
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name)
+
+## neg 2
+polarity <- "neg"
+temp.identifier <- "neg" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+temp.output_folder <- paste0("output_folder_", temp.identifier, "/")
+exp.num = 2
+
+neg.tab.total = read_csv(paste0(temp.output_folder,"temp.table.csv"))%>%
+  mutate(Experiment = exp.num)
+neg.tab.sum = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+neg.tab.MIDs =   read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv"))%>%
+  right_join(., neg.tab.total %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = mz+mass_diff,
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name)
+
+## neg 1
+polarity <- "neg"
+temp.identifier <- "neg" # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 1
+temp.output_folder <- paste0("output_folder_", temp.identifier, "_exp",exp.num,"/")
+
+neg.tab.total1 = read_csv(paste0(temp.output_folder,"temp.table.csv"))%>%
+  mutate(Experiment = exp.num)
+neg.tab.sum1 = read_csv(paste0(temp.output_folder,"MF_summary_table.csv"))%>%
+  mutate(Experiment = exp.num)
+neg.tab.MIDs1 =   read_csv(paste0(temp.output_folder,"Tidy_MID_df.csv")) %>%
+  right_join(., neg.tab.total1 %>% dplyr::select(feature, mz, rt, compound_name) %>% unique()) %>%
+  group_by(feature, isotope, exp_num, time, IS, mz, rt, compound_name) %>%
+  summarise(MID.mean = mean(MID, na.rm = T),
+            MID.sd = sd(MID, na.rm = T)) %>%
+  left_join(isotope.key) %>%
+  mutate(Metabolite = ifelse(exp_num==2,paste0("S-",
+                                               feature),
+                             paste0("N-",
+                                    feature)),
+         Metabolite = ifelse(temp.identifier=="cyano",
+                             paste0("Cyano_",Metabolite),
+                             paste0("HILIC_",Metabolite)),
+         Isotopologue = paste0(Metabolite,"_13C-",
+                               C.lab, " 15N-",N.lab),
+         ionization = temp.polarity) %>%
+  left_join(.,mz.diffs ) %>%
+  ungroup() %>%
+  mutate(mass_diff = ifelse(isotope == "M_area",0,mass_diff),
+         iso.mz = as.numeric(mz) + as.numeric(mass_diff),
+         Experiment = paste0("Fate",exp_num),
+         untargeted_compound_name = ifelse(is.na(compound_name),"Unknown",compound_name)) %>%
+  dplyr::rename(Timepoint = time) %>%
+  dplyr::select(Experiment, Timepoint, Metabolite, Isotopologue, C.lab, N.lab, iso.mz, ionization, MID.mean, MID.sd,untargeted_compound_name) 
+
+
+combined.total = rbind(cyano.tab.total, pos.tab.total) %>% 
+  rbind(neg.tab.total) %>%
+  rbind(cyano.tab.total1) %>%
+  rbind(pos.tab.total1) %>%
+  rbind(neg.tab.total1) %>%
+  arrange(exp.num, LC.column, MS.ionization) %>%
+  dplyr::select(Experiment, everything())
+write_csv(combined.total, "Combined.Untargeted.Significant.MF.Info.csv")
+
+combined.sum = rbind(cyano.tab.sum, pos.tab.sum) %>%
+  rbind(neg.tab.sum) %>%
+  full_join(pos.tab.sum1) %>%
+  full_join(cyano.tab.sum1) %>%
+  full_join(neg.tab.sum1) %>%
+  dplyr::select(Experiment, everything()) 
+write_csv(combined.sum, "Combined.Untargeted.Significant.MF.summary.csv")
+
+
+combined.MIDs = rbind(cyano.tab.MIDs, pos.tab.MIDs) %>%
+  rbind(neg.tab.MIDs) %>%
+  full_join(pos.tab.MIDs1) %>%
+  full_join(cyano.tab.MIDs1) %>%
+  # full_join(neg.tab.MIDs1) %>%
+  mutate(untargeted_compound_name = ifelse(grepl("NA: m",untargeted_compound_name),
+                                           str_replace(untargeted_compound_name,"NA:","Unknown:"),
+                                           untargeted_compound_name)) %>%
+  dplyr::select(Experiment, everything()) 
+write_csv(combined.MIDs, "Combined.Untargeted.Significant.MF.MIDs.csv")
+
+# combine.mids
+```
+
+
+## create a supplemental figure that has 15N1X13C2 isotopes
+```{r newSuppFig_N15X3C13, echo = F, message=F, warning=F}
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0("output_folder_pos/", "stan_annotations.csv"))
+MID_df <- read_csv(paste0("output_folder_pos/", "Tidy_MID_df.csv"))
+MID_sig.test <- read_csv(paste0("output_folder_pos/", "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+curated.MFs.1 <- read_csv(paste0("output_folder_pos_exp1/","Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations.1 <- read.csv(paste0("output_folder_pos_exp1/", "stan_annotations.csv"))
+MID_df.1 <- read_csv(paste0("output_folder_pos_exp1/", "Tidy_MID_df.csv"))
+MID_sig.test.1 <- read_csv(paste0("output_folder_pos_exp1/", "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+this.isotope = "N15X2C13_area"
+cut.here = 16.5
+
+data_mat_iso2.0 <- MID_df %>%
+  filter(feature %in% curated.MFs$feature) %>%
+  filter(time>=0) %>%
+  filter(isotope==this.isotope) %>%
+  left_join(stan_annotations, by="feature") %>%
+  left_join(MID_sig.test)%>%
+  filter(sig)
+
+data_mat_iso1.0 <- MID_df.1 %>%
+  filter(feature %in% curated.MFs.1$feature) %>%
+  left_join(curated.MFs.1 %>% dplyr::select(feature, reason)) %>%
+  filter(time>=0) %>%
+  filter(isotope==this.isotope) %>%
+  left_join(stan_annotations.1, by="feature") %>%
+  left_join(MID_sig.test.1) %>%
+  filter(sig)
+
+exp2.names = data_mat_iso2.0 %>% 
+  dplyr::select(feature, compound_name) %>% 
+  unique() %>%
+  rename(Ex2MF =feature, compound_name2 = compound_name)
+match.key = data_mat_iso1.0 %>% 
+  dplyr::select(feature, reason, compound_name) %>% 
+  unique() %>%
+  rename(Ex1MF =feature, compound_name1 = compound_name ) %>%
+  mutate(Ex2MF =  sub(".*exp2 ", "", reason),
+         Ex2MF= ifelse(grepl("FT",Ex2MF),Ex2MF,NA)) %>%
+  full_join(exp2.names) %>%
+  mutate(compound_name = ifelse(is.na(compound_name2),compound_name1,compound_name2),
+         FeatureName = ifelse(is.na(Ex2MF),paste0("N-",Ex1MF),
+                              ifelse(is.na(Ex1MF),paste0("S-",Ex2MF),
+                                     paste0("N-",Ex1MF,"/S-",Ex2MF))),
+         FinalKey = ifelse(is.na(compound_name),FeatureName,compound_name)) 
+
+
+
+data_mat_iso2 <- data_mat_iso2.0  %>%
+  left_join(match.key %>% dplyr::select(Ex2MF, FinalKey), by = c("feature"="Ex2MF"))%>%
+  # mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+  filter(sig)%>%
+  select(-compound_name, -feature) %>%
+  group_by(FinalKey) %>% 
+  filter(sum(MID!=0, na.rm = TRUE) > 5 &
+           sum(MID==100, na.rm = TRUE) < 6) %>%
+  filter(FinalKey!="L-Histidine",
+         FinalKey !="N-FT0235/S-FT197",
+         FinalKey !="N-FT0396/S-FT359") %>%
+  # mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>% ##z - score - super high or super low is still meaningful even though we can't use the sd as the comparison to a standard curve
+  # select(FinalKey, filename, delta_avg) %>%
+    select(FinalKey, filename, MID) %>%
+
+  left_join(data_mat_iso2.0 %>% dplyr::select(filename,time,tripl) %>% unique(),
+            by="filename") %>%
+  arrange(FinalKey, desc(time)) %>%
+  mutate(short_name=factor(paste("S",time, tripl, sep = "_")))
+
+data_mat_iso1 <- data_mat_iso1.0 %>%
+  left_join(match.key %>% dplyr::select(Ex1MF, FinalKey), by = c("feature"="Ex1MF"))%>%
+  select(-compound_name, -feature) %>%
+  group_by(FinalKey) %>% 
+  filter(sum(MID!=0, na.rm = TRUE) > 5 &
+           sum(MID==100, na.rm = TRUE) < 6) %>%
+  filter(FinalKey!="L-Glutamine",
+         FinalKey !="N-FT0222",
+         FinalKey !="N-FT0396/S-FT359") %>%
+  # mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>% ##z - score - super high or super low is still meaningful even though we can't use the sd as the comparison to a standard curve
+  # select(FinalKey, filename, delta_avg) %>%
+    select(FinalKey, filename, MID) %>%
+
+  left_join(data_mat_iso1.0 %>% dplyr::select(filename,time,tripl) %>% unique(),
+            by="filename") %>%
+  arrange(FinalKey, desc(time)) %>%
+  mutate(short_name=factor(paste("N",time, tripl, sep = "_")))
+
+data_mat_iso = full_join(data_mat_iso1 %>%
+                           # select(FinalKey, short_name, delta_avg) ,
+                           select(FinalKey, short_name, MID) ,
+
+                         data_mat_iso2 %>%
+                           # select(FinalKey, short_name, delta_avg)) %>% 
+                           select(FinalKey, short_name, MID)) %>%
+
+  # pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+    pivot_wider(names_from = short_name, values_from = MID) %>%
+
+  as.data.frame() %>%
+  mutate(FinalKey = factor(FinalKey, levels = c("Adenosine",
+                                                "Creatine",
+                                                "Deoxyadenosine",
+                                                "Guanine",
+                                                "N-FT0190/S-FT159",
+                                                "N-FT0365/S-FT328	",
+                                                "N-FT0371/S-FT332" ,
+                                                "N-FT0614/S-FT596" ,
+                                                "N-FT0621/S-FT600",
+                                                "N-FT0769",
+                                                "N-FT0887/S-FT807",
+                                                "N-FT0899/S-FT814",
+                                                "N-FT0930/S-FT830",
+                                                "Trimethylamine N-oxide",
+                                                "Allopurinol",
+                                                "Cytosine",
+                                                "Glycine betaine",
+                                                "Gonyol",
+                                                "S-FT250",
+                                                "S-FT633"
+                                               ))) %>%
+  arrange(FinalKey) %>%
+  select(-FinalKey) %>%
+  as.matrix()
+rownames(data_mat_iso) =  c("Adenosine",
+                            "Creatine",
+                            "Deoxyadenosine",
+                            "Guanine",
+                            "N-FT0190/S-FT159",
+                            "N-FT0365/S-FT328	",
+                            "N-FT0371/S-FT332" ,
+                            "N-FT0614/S-FT596" ,
+                            "N-FT0621/S-FT600",
+                            "N-FT0769",
+                            "N-FT0887/S-FT807",
+                            "N-FT0899/S-FT814",
+                            "N-FT0930/S-FT830",
+                            "Trimethylamine N-oxide",
+                            "Allopurinol",
+                            "Cytosine",
+                            "Glycine betaine",
+                            "Gonyol",
+                            "S-FT250",
+                            "S-FT633"
+)
+
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+pdf(file = "Test.Heatmap.N15X2C13.pdf")
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+dev.off()
+# hc <- data_mat_iso %>%
+#   dist(method = "manhattan", diag = TRUE, upper = TRUE) %>%
+#   hclust()
+# 
+# plot(as.dendrogram(hc))
+# 
+# if(is.null(cut.here)){
+#   
+#   heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", 
+#                        file = paste0(output_folder,this.isotope,"_heatmap.html"))
+# } else{
+#   ## cuttree
+#   dend.groups = cutree(hc, h = cut.here )
+#   
+#   ## heatmap
+#   heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", col_side_colors = dend.groups,
+#                        file = paste0(output_folder,"clustering_and_heatmaps/",this.isotope,"_heatmap2.html"))
+# }
+
+
+data_mat_isoS <- data_mat_iso2 %>%
+  # select(FinalKey, short_name, delta_avg) %>% 
+    select(FinalKey, short_name, MID) %>% 
+
+  # pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  pivot_wider(names_from = short_name, values_from = MID) %>%
+
+    as.data.frame() %>%
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey)
+heatmaply::heatmaply(t(data_mat_isoS), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex2",this.isotope,"_heatmap.html"))
+
+data_mat_isoN <- data_mat_iso1 %>%
+  # select(FinalKey, short_name, delta_avg) %>% 
+    select(FinalKey, short_name, MID) %>%
+
+  # pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+    pivot_wider(names_from = short_name, values_from = MID) %>%
+
+  as.data.frame() %>%
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey)
+heatmaply::heatmaply(t(data_mat_isoN), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex1",this.isotope,"_heatmap.html"))
+
+
+heatmap.data = data_mat_iso %>%
+  as.data.frame() %>%
+  mutate(feature = rownames(data_mat_iso)) %>%
+  gather(Sample.ID, Value, -feature) %>%
+  left_join(MID_df %>%
+              filter(feature %in% curated.MFs$feature) %>%
+              filter(time>=0) %>%
+              filter(isotope==this.isotope) %>%
+              left_join(stan_annotations, by="feature") %>%
+              mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+              select(-compound_name) %>%
+              group_by(feature) %>% 
+              filter(sum(MID!=0, na.rm = TRUE) > 6 &
+                       sum(MID==100, na.rm = TRUE) < 6) %>%
+              mutate(Sample.ID=factor(paste(time, tripl, sep = "_"))) %>%
+              dplyr::select(Sample.ID, MID, feature, isotope, filename))  %>%
+  unique()
+
+
+## with only overlapping compounds ----
+data_mat_iso = full_join(data_mat_iso1 %>%
+                           # select(FinalKey, short_name, delta_avg) ,
+                           select(FinalKey, short_name, MID) ,
+
+                         data_mat_iso2 %>%
+                           # select(FinalKey, short_name, delta_avg)) %>%  
+                             select(FinalKey, short_name, MID)) %>%  
+
+  # filter(!is.na(delta_avg)) %>%
+    filter(!is.na(MID)) %>%
+
+  group_by(FinalKey) %>%
+  summarise(n = n()) %>%
+  filter(n>24) %>%
+  left_join(.,  full_join(data_mat_iso1 %>%
+                            # select(FinalKey, short_name, delta_avg) ,
+                          select(FinalKey, short_name, MID) ,
+
+                          data_mat_iso2 %>%
+                            # select(FinalKey, short_name, delta_avg))) %>%
+                              select(FinalKey, short_name, MID))) %>%
+
+  dplyr::select(-n) %>%
+  # pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+    pivot_wider(names_from = short_name, values_from = MID) %>%
+
+  as.data.frame() %>% 
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey) %>%
+  as.matrix()
+
+
+heatmap(t(data_mat_iso),  Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+pdf(file = "Test.Heatmap.N15X2C13.pdf")
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+dev.off()
+
+data_mat_iso.new = data_mat_iso[, c(21:1,39:22)]
+
+heatmaply::heatmaply(t(data_mat_iso.new), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex1n2",this.isotope,"_heatmap.html"))
+library(gplots)
+
+# pdf(file = "Test.Heatmap2.N15X2C13.pdf")
+heatmap.2(t(data_mat_iso.new),  Rowv = F, scale="none",
+          dendrogram = "none",
+          # col = viridis::viridis(n=17),
+          col = rev(grey.colors(n=17,start = 0.1, end = 0.95)),
+
+          density.info = "none",
+          # breaks= c(-2.5,-2.5+(5/17)*(1:17)),
+          breaks= c(0,(7/17)*(1:17)),
+
+          trace = "none")   
+# dev.off()
+```
+
+## create a supplemental figure that has 15N1X13C5 isotopes
+```{r newSuppFig, echo = F, message=F, warning=F}
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0("output_folder_pos/", "stan_annotations.csv"))
+MID_df <- read_csv(paste0("output_folder_pos/", "Tidy_MID_df.csv"))
+MID_sig.test <- read_csv(paste0("output_folder_pos/", "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+curated.MFs.1 <- read_csv(paste0("output_folder_pos_exp1/","Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations.1 <- read.csv(paste0("output_folder_pos_exp1/", "stan_annotations.csv"))
+MID_df.1 <- read_csv(paste0("output_folder_pos_exp1/", "Tidy_MID_df.csv"))
+MID_sig.test.1 <- read_csv(paste0("output_folder_pos_exp1/", "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+this.isotope = "N15X5C13_area"
+cut.here = 16.5
+
+data_mat_iso2.0 <- MID_df %>%
+  filter(feature %in% curated.MFs$feature) %>%
+  filter(time>=0) %>%
+  filter(isotope==this.isotope) %>%
+  left_join(stan_annotations, by="feature") %>%
+  left_join(MID_sig.test)%>%
+  filter(sig)
+
+data_mat_iso1.0 <- MID_df.1 %>%
+  filter(feature %in% curated.MFs.1$feature) %>%
+  left_join(curated.MFs.1 %>% dplyr::select(feature, reason)) %>%
+  filter(time>=0) %>%
+  filter(isotope==this.isotope) %>%
+  left_join(stan_annotations.1, by="feature") %>%
+  left_join(MID_sig.test.1) %>%
+  filter(sig)
+
+exp2.names = data_mat_iso2.0 %>% 
+  dplyr::select(feature, compound_name) %>% 
+  unique() %>%
+  rename(Ex2MF =feature, compound_name2 = compound_name)
+match.key = data_mat_iso1.0 %>% 
+  dplyr::select(feature, reason, compound_name) %>% 
+  unique() %>%
+  rename(Ex1MF =feature, compound_name1 = compound_name ) %>%
+  mutate(Ex2MF =  sub(".*exp2 ", "", reason),
+         Ex2MF= ifelse(grepl("FT",Ex2MF),Ex2MF,NA)) %>%
+  full_join(exp2.names) %>%
+  mutate(compound_name = ifelse(is.na(compound_name2),compound_name1,compound_name2),
+         FeatureName = ifelse(is.na(Ex2MF),paste0("N-",Ex1MF),
+                              ifelse(is.na(Ex1MF),paste0("S-",Ex2MF),
+                                     paste0("N-",Ex1MF,"/S-",Ex2MF))),
+         FinalKey = ifelse(is.na(compound_name),FeatureName,compound_name)) 
+
+
+
+data_mat_iso2 <- data_mat_iso2.0  %>%
+  left_join(match.key %>% dplyr::select(Ex2MF, FinalKey), by = c("feature"="Ex2MF"))%>%
+  # mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+  filter(sig)%>%
+  select(-compound_name, -feature) %>%
+  group_by(FinalKey) %>% 
+  filter(sum(MID!=0, na.rm = TRUE) > 5 &
+           sum(MID==100, na.rm = TRUE) < 6) %>%
+  filter(FinalKey!="L-Histidine",
+         FinalKey !="N-FT0235/S-FT197") %>%
+  mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>% ##z - score - super high or super low is still meaningful even though we can't use the sd as the comparison to a standard curve
+  select(FinalKey, filename, delta_avg) %>%
+  left_join(data_mat_iso2.0 %>% dplyr::select(filename,time,tripl) %>% unique(),
+            by="filename") %>%
+  arrange(FinalKey, desc(time)) %>%
+  mutate(short_name=factor(paste("S",time, tripl, sep = "_")))
+
+data_mat_iso1 <- data_mat_iso1.0 %>%
+  left_join(match.key %>% dplyr::select(Ex1MF, FinalKey), by = c("feature"="Ex1MF"))%>%
+  select(-compound_name, -feature) %>%
+  group_by(FinalKey) %>% 
+  filter(sum(MID!=0, na.rm = TRUE) > 5 &
+           sum(MID==100, na.rm = TRUE) < 6) %>%
+  filter(FinalKey!="L-Glutamine",
+         FinalKey !="N-FT0222") %>%
+  mutate(delta_avg=scale(MID-mean(MID,na.rm = TRUE))[,1]) %>% ##z - score - super high or super low is still meaningful even though we can't use the sd as the comparison to a standard curve
+  select(FinalKey, filename, delta_avg) %>%
+  left_join(data_mat_iso1.0 %>% dplyr::select(filename,time,tripl) %>% unique(),
+            by="filename") %>%
+  arrange(FinalKey, desc(time)) %>%
+  mutate(short_name=factor(paste("N",time, tripl, sep = "_")))
+
+data_mat_iso = full_join(data_mat_iso1 %>%
+                           select(FinalKey, short_name, delta_avg) ,
+                         data_mat_iso2 %>%
+                           select(FinalKey, short_name, delta_avg))%>% 
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>%
+  mutate(FinalKey = factor(FinalKey, levels = c("Ectoine",
+                                                "N-FT0279/S-FT243",
+                                                "Creatine",
+                                                "Glycine betaine",
+                                                "N-FT0365/S-FT328",
+                                                "N-FT0235/S-FT197",
+                                                "N-FT0422/S-FT391" ,
+                                                "Glycerophosphocholine",
+                                                "N-FT0869" ,
+                                                "Choline",
+                                                "N-FT0867",
+                                                "Carnitine",
+                                                "N-FT0065/S-FT046",
+                                                "Adenosine",
+                                                "N-FT0657/S-FT633",
+                                                "N-FT0480"  ,
+                                                "Acetylcholine" ,
+                                                "beta-Alaninebetaine"))) %>%
+  arrange(FinalKey) %>%
+  select(-FinalKey) %>%
+  as.matrix()
+rownames(data_mat_iso) = c("Ectoine",
+                           "N-FT0279/S-FT243",
+                           "Creatine",
+                           "Glycine betaine",
+                           "N-FT0365/S-FT328",
+                           "N-FT0235/S-FT197",
+                           "N-FT0422/S-FT391" ,
+                           "Glycerophosphocholine",
+                           "N-FT0869" ,
+                           "Choline",
+                           "N-FT0867",
+                           "Carnitine",
+                           "N-FT0065/S-FT046",
+                           "Adenosine",
+                           "N-FT0657/S-FT633",
+                           "N-FT0480"  ,
+                           "Acetylcholine" ,
+                           "beta-Alaninebetaine")
+
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+pdf(file = "Test.Heatmap.pdf")
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+dev.off()
+# hc <- data_mat_iso %>%
+#   dist(method = "manhattan", diag = TRUE, upper = TRUE) %>%
+#   hclust()
+# 
+# plot(as.dendrogram(hc))
+# 
+# if(is.null(cut.here)){
+#   
+#   heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", 
+#                        file = paste0(output_folder,this.isotope,"_heatmap.html"))
+# } else{
+#   ## cuttree
+#   dend.groups = cutree(hc, h = cut.here )
+#   
+#   ## heatmap
+#   heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan", col_side_colors = dend.groups,
+#                        file = paste0(output_folder,"clustering_and_heatmaps/",this.isotope,"_heatmap2.html"))
+# }
+
+
+data_mat_isoS <- data_mat_iso2 %>%
+  select(FinalKey, short_name, delta_avg) %>% 
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>%
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey)
+heatmaply::heatmaply(t(data_mat_isoS), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex2",this.isotope,"_heatmap.html"))
+
+data_mat_isoN <- data_mat_iso1 %>%
+  select(FinalKey, short_name, delta_avg) %>% 
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>%
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey)
+heatmaply::heatmaply(t(data_mat_isoN), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex1",this.isotope,"_heatmap.html"))
+
+
+heatmap.data = data_mat_iso %>%
+  as.data.frame() %>%
+  mutate(feature = rownames(data_mat_iso)) %>%
+  gather(Sample.ID, Value, -feature) %>%
+  left_join(MID_df %>%
+              filter(feature %in% curated.MFs$feature) %>%
+              filter(time>=0) %>%
+              filter(isotope==this.isotope) %>%
+              left_join(stan_annotations, by="feature") %>%
+              mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+              select(-compound_name) %>%
+              group_by(feature) %>% 
+              filter(sum(MID!=0, na.rm = TRUE) > 6 &
+                       sum(MID==100, na.rm = TRUE) < 6) %>%
+              mutate(Sample.ID=factor(paste(time, tripl, sep = "_"))) %>%
+              dplyr::select(Sample.ID, MID, feature, isotope, filename))  %>%
+  unique()
+
+
+## with only overlapping compounds ----
+data_mat_iso = full_join(data_mat_iso1 %>%
+                           select(FinalKey, short_name, delta_avg) ,
+                         data_mat_iso2 %>%
+                           select(FinalKey, short_name, delta_avg)) %>%  
+  filter(!is.na(delta_avg)) %>%
+  group_by(FinalKey) %>%
+  summarise(n = n()) %>%
+  filter(n>24) %>%
+  left_join(.,  full_join(data_mat_iso1 %>%
+                            select(FinalKey, short_name, delta_avg) ,
+                          data_mat_iso2 %>%
+                            select(FinalKey, short_name, delta_avg))) %>%
+  dplyr::select(-n) %>%
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>% 
+  `rownames<-`(.$FinalKey) %>%
+  select(-FinalKey) %>%
+  as.matrix()
+
+
+heatmap(t(data_mat_iso),  Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+pdf(file = "Test.Heatmap.pdf")
+heatmap(t(data_mat_iso), Colv = NA, Rowv = NA, scale="column",
+        col = viridis::viridis(n=17))
+dev.off()
+
+data_mat_iso.new = data_mat_iso[, c(21:1,39:22)]
+
+heatmaply::heatmaply(t(data_mat_iso.new), Rowv=FALSE, dist_method="manhattan",file = paste0("Ex1n2",this.isotope,"_heatmap.html"))
+library(gplots)
+
+pdf(file = "Test.Heatmap2.pdf")
+heatmap.2(t(data_mat_iso.new),  Rowv = F, scale="column",
+          dendrogram = "none",
+          col = viridis::viridis(n=17),
+          breaks= c(-2.5,-2.5+(5/17)*(1:17)),
+          density.info = "none",
+          trace = "none")   
+dev.off()
+```
+MAA stuff
+```{r maa.stuff, echo = F, message=F, warning=F}
+ms_masses <- c(188.0685, 261.1212, 316.1271, 244.1059, 317.1111,
+               288.1321, 332.1219, 344.1583, 346.1376, 302.1478, 
+               245.0899, 328.127,  284.1374)+1.007276
+nice_masses <- c(316.1271, 244.1059, 288.1321, 332.1219, 346.1376, 302.1478, 284.1374, 328.127, 245.0899)+1.007276
+curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+  filter(keep_final == 'y')
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
+MID_sig.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
+  dplyr::select(feature, isotope, sig)
+
+round(nice_masses,2) %in% round(curated.MFs$mzmed.x,2)
+
+MAA.MFs = curated.MFs %>% mutate(rounded.mz = round(mzmed.x,2)) %>%
+  filter(rounded.mz %in% round(nice_masses,2))
+
+## 
+
+## plot out MID line plots----
+old.wd = getwd()
+setwd(output_folder)
+This.MF =  list(MAA.MFs$feature)[[1]]
+area.plot = ggplot(long_envelopes %>% filter(feature %in% This.MF) %>%
+                     left_join(cruise_metadata) %>%
+                     filter(time >= 0) %>%
+                     group_by(feature, isotope, time) %>%
+                     summarise(iso_area.sd = sd(iso_area, na.rm = T),
+                               iso_area = mean(iso_area, na.rm = T))) +
+  geom_line(aes(x = time, y = iso_area, color = isotope)) +
+  geom_errorbar(aes(x = time, ymin = iso_area-iso_area.sd, ymax = iso_area+iso_area.sd, color = isotope))+
+  facet_wrap(~feature, scales = "free_y") 
+plotly.area.plot = plotly::ggplotly(area.plot)
+file.path.to.save =  paste0(paste(This.MF, collapse = "_"),"_areaPlot.html")
+htmlwidgets::saveWidget(plotly.area.plot, file.path.to.save)
+
+MID.plot = ggplot(MID_df %>% filter(feature %in% This.MF) %>%
+                    filter(time >= 0)%>%
+                    group_by(feature, isotope, time) %>%
+                    summarise(MID.sd = sd(MID, na.rm = T),
+                              MID = mean(MID, na.rm = T))) +
+  geom_line(aes(x = time, y = MID, color = isotope)) +
+  geom_errorbar(aes(x = time, ymin = MID-MID.sd, ymax = MID+MID.sd, color = isotope))+
+  facet_wrap(~feature, scales = "free_y")
+plotly.MID.plot = plotly::ggplotly(MID.plot)
+file.path.to.save =  paste0(paste(This.MF, collapse = "_"),"_MIDPlot.html")
+htmlwidgets::saveWidget(plotly.MID.plot, file.path.to.save)
+
+setwd("..")
+```
+

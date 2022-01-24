@@ -1,0 +1,598 @@
+---
+title: "Control Script for GBT data"
+output: html_document
+---
+
+Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = TRUE)
+options(dplyr.summarise.inform=F)
+options(pillar.sigfig=7)
+library(tidyverse)
+library(data.table)
+library(pbapply)
+library(RaMS)
+
+polarity <- "pos"
+identifier <- "cyano"   #Either the same as polarity (pos/neg) or "cyano"
+exp.num = 1 # 1 or 2
+if(exp.num ==2){ output_folder <- paste0("output_folder_", identifier, "/")} else {
+  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")}
+mzxml_path <- paste0("mzXMLs_", identifier, "/")
+if(identifier=="cyano"){
+  date_run <- "200612"
+} else {
+  date_run <- "200605"
+}
+
+source("scripts/functions.R")
+cruise_metadata <- list.files(mzxml_path, pattern = "mzXML") %>%
+  data.frame(filename=.) %>%
+  mutate(exp_num=str_extract(filename, "(?<=Fate)\\d(?=M)|Blk|Std")) %>%
+  mutate(type=str_extract(filename, paste0("(?<=", date_run, "_).*?(?=_)"))) %>%
+  mutate(time=str_extract(filename, "(?<=MT)\\d+|(?<=MT)long|Blk|Std")) %>%
+  mutate(time=as.numeric(ifelse(time=="long", 96, time))) %>%
+  mutate(time=ifelse(type=="Blk"|type=="Std", -1, time)) %>%
+  mutate(IS=str_extract(filename, "(?<=-)IS|pos|neg(?=_)")) %>%
+  mutate(tripl=str_extract(filename, "[A-C](?=.mzXML)")) %>%
+  # filter(IS=="pos"|type=="Std") %>%
+  # filter(IS==polarity) %>%
+  filter(exp_num==exp.num|exp_num=="Blk"|exp_num=="Std") %>%
+  arrange(time)
+
+ms_files <- cruise_metadata$filename
+```
+
+## Peakpicking
+
+The script below, when sourced, runs XCMS's centWave peakpicking. It also calculates an improved signal-to-noise and metric of Gaussian-ness that seems to sift through the noise more accurately than the default signal-to-noise ratio, which has known bugs (https://doi.org/10.1021/acs.analchem.7b01069). Finally, it performs retention time correction and peak correspondence (grouping peaks across files).
+
+Params have been set manually and work more or less okay
+
+```{r peakpicking, error=TRUE}
+library(xcms)
+
+# Create folder if it doesn't already exist
+if(!dir.exists(output_folder)){dir.create(output_folder)}
+
+# Define the peakpicking parameters
+# Set the new quality threshold
+# Define the retention time correction parameters
+# Define the correspondence parameters
+# Make sure that filled peaks have at least a 2.5ppm window from mzmin to mzmax around mz
+if(identifier=="cyano"){
+  cwp <- CentWaveParam(ppm = 2.5, peakwidth = c(4, 30), 
+                     snthresh = 1, prefilter = c(4, 10000), 
+                     integrate = 2, mzCenterFun = "wMean", 
+                     mzdiff = 0.001, fitgauss = FALSE, 
+                     noise = 1000, firstBaselineCheck = TRUE, 
+                     extendLengthMSW = TRUE)
+  qscore_threshold <- 20
+  obp <- ObiwarpParam(binSize = 0.1, centerSample = 10)
+  pdp <- PeakDensityParam(sampleGroups = cruise_metadata$time, 
+                        bw = 12, minFraction = 0.1, 
+                        binSize = 0.001, minSamples = 2)
+  fpp <- FillChromPeaksParam(ppm = 2.5)
+} else {
+  cwp <- CentWaveParam(ppm = 2.5, peakwidth = c(15, 15), 
+                     snthresh = 1, prefilter = c(5, 10000), 
+                     integrate = 2, mzdiff = 0.001, 
+                     noise = 5000, firstBaselineCheck = FALSE, 
+                     extendLengthMSW = TRUE)
+  qscore_threshold <- 20
+  obp <- ObiwarpParam(binSize = 0.1, centerSample = 10)
+  pdp <- PeakDensityParam(sampleGroups = cruise_metadata$time, 
+                        bw = 12, minFraction = 0.1, 
+                        binSize = 0.001, minSamples = 2)
+  fpp <- FillChromPeaksParam(ppm = 2.5)
+}
+
+
+
+# Perform peakpicking
+source("scripts/peakpicking.R")
+
+# Save intermediate results
+saveRDS(xdata, file = paste0(output_folder, "xdata.rds"))
+saveRDS(xdata_cleanpeak, file = paste0(output_folder, "xdata_cleanpeak.rds"))
+saveRDS(xdata_rt, file = paste0(output_folder, "xdata_rt.rds"))
+saveRDS(xdata_cor, file = paste0(output_folder, "xdata_cor.rds"))
+saveRDS(xdata_filled, file = paste0(output_folder, "xdata_filled.rds"))
+write.csv(raw_peaks, file = paste0(output_folder, "raw_peaks.csv"), row.names = FALSE)
+unique(warnings())
+```
+
+
+
+## Isotope finding and duplicate removal
+
+Isotopes "look" the same as the base peak and will be separated by a very specific mass deviation. With this, we can discover them by iterating over the various possible isotopes and calculating the correlation between the chromatograms.
+
+Read in the raw data
+  xdata_filled is only used here for retention time correction information
+  raw_peaks is the output from the previous step, which is xcms + new quality scores
+
+Fill in missing data and deduplicate
+  Deduplicate by grouping into feature and filename, each of which should only have a single peak
+    Those that don't are often doubly-integrated or "split" peaks, which I don't have a good way of handling now
+    For now, just choosing the largest of the two seems to work ok
+  Fill in feature-filename values, since each feature should in theory be present in all files
+    Fill in rt, rtmin, rtmax with the median for the feature
+    Fill in mz with the mean for the feature
+    
+Use findIsoAdduct to loop over each file/feature/isotope and calculate peak area and peak correlation
+  Set up parallelized with bplapply which eats errors and is generally unhelpful when things go wrong
+  Debug by switching it to pblapply to get the actual errors
+  
+  findIsoAdduct basically works by going back to the raw data and integrating the the isotope peak windows (mz+/-ppm, rt between rtmin and rtmax) as well as the original peak area to be consistent
+  
+Use isIsoAdduct to do basically the same thing, but it looks in the *other* direction by assuming
+that the compound is an isotope or adduct and then works backwards to check on the original mass
+
+```{r deisoadduct, error=TRUE}
+library(xcms)
+register(BPPARAM = SnowParam(tasks = length(ms_files), progressbar = TRUE))
+xdata_filled <- readRDS(file = paste0(output_folder, "xdata_filled.rds"))
+raw_peaks <- read.csv(file = paste0(output_folder, "raw_peaks.csv"))
+
+if(identifier=="pos"){
+  not_addisos <- list("Glutamine"=c(mz=147.076968, rt=700),
+                    "Citrulline"=c(mz=176.103517, rt=750),
+                    "Guanine"=c(mz=152.0567, rt=525),
+                    "Glutamic acid"=c(mz=148.061, rt=730),
+                    "4-Aminobutyric acid"=c(mz=104.071, rt=730))
+} else if(identifier=="neg"){
+  warning("Manual identification of non-adduct/isotopes not yet complete for HILIC neg")
+} else {
+  warning("Manual identification of non-adduct/isotopes not yet complete for CYANO")
+}
+# How many seconds away from the given RT can the peak be before it's removable?
+# Set high to collect entire EIC
+peak_rt_flex <- 10
+
+
+# When finding adducts and isotopes of a given peak...
+# How similar do the median peak and median adduct need to be to assume adduct?
+shape_find_threshold <- 0.9
+# How good does the peak area ~ adduct area correlation across files need to be to assume adduct?
+# This was used for de-isotoping and de-adducting but is less robust with isotopically labeled compounds
+area_find_threshold <- 0
+
+# When removing peaks that are likely adducts...
+# How similar do the median peak and median adduct need to be to assume adduct?
+shape_remove_threshold <- 0.8
+# How good does the peak area ~ adduct area correlation across files need to be to assume adduct?
+area_remove_threshold <- 0
+
+
+source("scripts/deisoadduct.R")
+
+write.csv(addiso_features, file=paste0(output_folder, "addiso_features.csv"), row.names = FALSE)
+write.csv(filled_peaks, file=paste0(output_folder, "filled_peaks.csv"), row.names = FALSE)
+write.csv(peak_envelopes, file=paste0(output_folder, "peak_envelopes.csv"), row.names = FALSE)
+
+unique(warnings())
+```
+
+filled_peaks: 
+  - same as raw_peaks but has the newly-reintegrated M_area column and no missing values
+peak_envelopes:
+  - filled_peaks but with extra columns
+    - Each isotope has two columns, match and area
+    - "Match" column is the correlation coefficient between the original EIC and the isotope EIC
+    - "Area" column is the Riemann trapezoidal sum of data points within ppm of the average mz (+ isotope delta) and between rtmin and rtmax
+      - Zero if no data was found
+addiso_features:
+  - feature
+  - adduct
+
+```{r check_deisoadduct}
+potential_dups <- read.csv(paste0(output_folder, "potential_duplicated_good_MFs.csv"))
+
+left_join(potential_dups, addiso_features, by="feature") %>%
+  arrange(mzmed, rtmed)
+
+write.csv(left_join(potential_dups, addiso_features, by="feature"), paste0(output_folder, "duplicate_report.csv"))
+
+if(!exists("msdata")){
+  msdata <- grabMSdata(files = paste0(mzxml_path, ms_files), grab_what = "MS1")
+}
+
+adblock <- function(m1, m2, rt_i){
+  rbind(
+    cbind(msdata$MS1[mz%between%pmppm(m1, 10)], type="orig"),
+    cbind(msdata$MS1[mz%between%pmppm(m2, 10)], type="addiso")
+  ) %>%
+    mutate(type=factor(type, levels = c("orig", "addiso"))) %>%
+    filter(rt%between%(rt_i+c(-1, 1))) %>%
+    left_join(cruise_metadata %>% select(-type)) %>%
+    ggplot() + 
+    geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+    facet_wrap(~type, scales = "free_y", ncol = 1)
+}
+adblock(268.10393, 270.10430, 454.6361/60)
+
+```
+
+
+
+## Annotate standards
+
+Automatically go through and identify standards using retention time ordering information
+
+```{r targeted}
+filled_peaks <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
+  dplyr::rename(M_area = into)
+given_stans <- read.csv("clean_stans.csv") %>% 
+  filter(polarity==!!polarity)
+
+feature_data <- filled_peaks %>%
+  group_by(feature) %>%
+  summarise(mzmed=median(mz), rtmed=median(rt), avgarea=mean(M_area))
+
+source("scripts/standard_assignments.R")
+
+write.csv(stan_annotations, paste0(output_folder, "stan_annotations.csv"), 
+          row.names = FALSE)
+```
+
+stan_annotations:
+  - compound_name: name of the standard
+  - feature: the "best" matched feature for a given standard (see function at top of script for explanation)
+  - isotope_validated: if the compound has an isotopologue, use that connection (same RT, mass delta)
+  - rt_matchup: if there are the same number of standards as peaks in a chromatogram, use the rt ordering to assign
+  - mix_matched: not helpful here because I didn't run the standard mixes (doubled the number of features somehow??)
+  - closer_rt: mostly what drives the annotation here
+  - area_choice: a tiebreaker, picks the bigger peak
+
+duplicate peaks were manually deduplicated
+
+
+
+## Clean up peak envelopes and create MID_df
+
+Pivot to long format (create isotope and iso_area column)
+  - "isotope" column now contains the isotopes names
+  - "iso_area" now contains the area for each isotope type
+  
+Patch the peaks where areas are all zero to avoid clustering errors
+  - If a peak was truly not found in any of a given sample, assume it was unlabeled and that its whole MID is in the base peak
+  
+Remove adducts and isotopes
+
+```{r peak_envelope_maker}
+addiso_features <- read.csv(paste0(output_folder, "addiso_features.csv"))
+
+long_envelopes <- read.csv(paste0(output_folder, "peak_envelopes.csv")) %>%
+  select(feature, mz, rt, filename, ends_with("area")) %>%
+  pivot_longer(cols = ends_with("area"), names_to = "isotope", values_to = "iso_area") %>%
+  filter(!feature%in%addiso_features$feature)
+
+patch_df <- long_envelopes %>%
+  group_by(feature, filename) %>%
+  summarise(needs_patch=all(iso_area==0)) %>%
+  ungroup() %>%
+  filter(needs_patch) %>%
+  mutate(isotope="M_area") %>%
+  mutate(iso_area=1) %>%
+  select(-needs_patch)
+
+long_envelopes <- long_envelopes %>%
+  rows_update(patch_df, by = c("feature", "filename", "isotope"))
+
+write.csv(long_envelopes, paste0(output_folder, "long_envelopes.csv"), row.names = FALSE)
+```
+
+Convert isotopes to factor to keep it from alphabetizing
+Group by feature and filename to calculate total area of all isotopes then
+Group by feature and *isotope* to calculate each isotope's relative contribution to the total
+Add in the cruise metadata to make plotting easy
+
+```{r MID making}
+MID_df <- long_envelopes %>%
+  mutate(isotope=factor(isotope, levels = unique(isotope))) %>%
+  group_by(feature, filename) %>%
+  mutate(total_envelope=sum(iso_area, na.rm = TRUE)) %>%
+  ungroup() %>% 
+  group_by(feature, isotope) %>%
+  mutate(MID=iso_area/total_envelope*100) %>% 
+  select(feature, filename, isotope, MID) %>%
+  ungroup() %>%
+  left_join(cruise_metadata, by = "filename")
+
+write.csv(MID_df, paste0(output_folder, "MID_df.csv"), row.names = FALSE)
+```
+
+
+## Visualize with heatmap/dendrograms
+
+The next section creates a ready-to-plot/analyze matrix
+
+Remove blanks (for which time = -1)
+Choose the isotope you're interested in (M_area, C13_area, N15X5C13_area)
+Use the annotated standards to replace FT numbers where possible
+Remove peaks that are either mostly zero or all 100
+  Can't remember why this was the decision but it avoids errors later
+Normalize/standardize
+  There's a couple options I played with and I still like the scale option best
+Mung into matrix
+  Shorten file names
+  Pivot into wide format
+  Convert to matrix while preserving row names
+
+
+```{r data_mat_iso}
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
+MID_df <- read_csv(paste0(output_folder, "MID_df.csv"))
+
+data_mat_iso <- MID_df %>%
+  # filter(feature=="FT098") %>%
+  filter(time>=0) %>%
+  filter(isotope=="M_area") %>%
+  left_join(stan_annotations, by="feature") %>%
+  mutate(feature=ifelse(is.na(compound_name), feature, compound_name)) %>%
+  select(-compound_name) %>%
+  group_by(feature) %>% 
+  filter(sum(MID!=0, na.rm = TRUE)>6 & sum(MID==100, na.rm = TRUE)<6) %>%
+  # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/IQR(MID, na.rm = TRUE)) %>%
+  # mutate(delta_avg=(MID-median(MID, na.rm = TRUE))/mad(MID, na.rm = TRUE)) %>%
+  mutate(delta_avg=scale(MID-mean(MID))[,1]) %>%
+  # mutate(delta_avg=MID) %>%
+  select(feature, filename, delta_avg) %>%
+  left_join(cruise_metadata, by="filename") %>%
+  arrange(feature, time) %>%
+  mutate(short_name=factor(paste(time, tripl, sep = "_"))) %>%
+  select(feature, short_name, delta_avg) %>% 
+  pivot_wider(names_from = short_name, values_from = delta_avg) %>%
+  as.data.frame() %>%
+  `rownames<-`(.$feature) %>%
+  select(-feature) %>%
+  as.matrix()
+```
+
+And plot!
+
+```{r heatmaply}
+hc <- data_mat_iso %>%
+  dist(method = "manhattan", diag = TRUE, upper = TRUE) %>% 
+  hclust()
+
+plot(as.dendrogram(hc))
+
+heatmaply::heatmaply(t(data_mat_iso), Rowv=FALSE, dist_method="manhattan")
+```
+
+
+## Some statistics
+
+```{r MID_anova}
+MID_df <- read.csv(paste0(output_folder, "MID_df.csv")) %>%
+  filter(time>=0)
+stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv")) %>%
+  select(compound_name, feature)
+feature_data <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
+  group_by(feature) %>%
+  summarize(mzmed=median(mz), rtmed=median(rt), avgarea=mean(M_area))
+
+diff_feats <- MID_df %>%
+  filter(isotope=="M_area") %>%
+  group_by(feature) %>%
+  summarize(all_M=min(MID)) %>%
+  filter(all_M!=100)
+
+# Which compounds were different?
+# Look for an overall change in the base peak's relative contribution
+# Run an ANOVA on each feature with time explaining differences in MID%
+# Correct for multiple comparisons and set low p-value
+aov_df <- MID_df %>% 
+  filter(isotope=="M_area") %>%
+  filter(time>=0) %>%
+  filter(feature%in%diff_feats$feature) %>%
+  group_by(feature) %>%
+  summarise(aov_pval=summary(aov(MID~factor(time)))[[1]]$`Pr(>F)`[1]) %>%
+  arrange(aov_pval) %>%
+  mutate(aov_pval=p.adjust(aov_pval, method = "BH")) %>%
+  # filter(feature=="FT131")
+  filter(aov_pval<0.001) %>%
+  left_join(stan_annotations %>% select(feature, compound_name)) %>%
+  left_join(feature_data)
+
+aov_df %>% print(n=Inf)
+
+gp <- MID_df %>%
+  filter(isotope=="M_area") %>%
+  filter(feature%in%aov_df$feature) %>%
+  left_join(stan_annotations %>% select(feature, compound_name)) %>%
+  mutate(feature = ifelse(is.na(compound_name), feature, compound_name)) %>%
+  select(-compound_name) %>%
+  ggplot() + 
+  geom_boxplot(aes(x=time, y=MID, group=time)) +
+  facet_wrap(~feature, scales = "free_y")
+
+# ggsave("fave_cmpds.pdf", device = "pdf", width = 20, height = 20)
+write.csv(aov_df, file = paste0(output_folder, "aov_df.csv"), row.names = FALSE)
+```
+
+```{r summary_stats}
+(total_features <- length(unique(MID_df$feature)))
+
+(neat_feats <- length(unique(aov_df$feature)))
+```
+
+## MSMS
+
+```{r has_msms}
+msmsdata <- grabMSdata(list.files(mzxml_path, pattern = "DDA", full.names = TRUE))
+aov_df <- read_csv(paste0(output_folder,"aov_df.csv"))
+msms_df <- aov_df %>%
+  mutate(has_msms=mapply(function(mzmed, rtmed){
+    msms_eic <- msmsdata$MS2[premz%between%pmppm(mzmed, 5)]
+    msms_frags <- msms_eic[rt%between%((rtmed/60 + c(-1, 1)))]
+    top_frags <- msms_frags[!fragmz%between%pmppm(mzmed, 5)][order(-int)]
+    top_frags %>%
+      filter(int>mean(int)) %>%
+      mutate(fragint=paste(round(fragmz, digits = 5), round(int), sep = ":")) %>%
+      summarize(msms=paste0(fragint, collapse = "; ")) %>%
+      pull(msms)
+  }, mzmed, rtmed))
+
+print(msms_df, n=Inf)
+
+write.csv(msms_df, file = paste0(output_folder, "msms_df.csv"), row.names = FALSE)
+```
+
+```{r print output for Metlin searches}
+msms_df %>%
+  filter(is.na(compound_name) & nchar(has_msms)>0) %>%
+  as_tibble()
+
+chosen_feat <- "FT0227"
+
+msms_df %>%
+  filter(feature==chosen_feat) %>%
+  separate_rows(has_msms, sep = "; ") %>%
+  separate(has_msms, into = c("fragmz", "int"), sep = ":") %>%
+  head(30) %>%
+  mutate(across(c(fragmz, int), .fns = as.numeric)) %>%
+  mutate(fragint=paste(round(fragmz, digits = 5), round(int), sep = " ")) %>%
+  summarize(msms=paste0(fragint, collapse = "\n")) %>%
+  pull(msms) %>% message()
+msms_df %>%
+  filter(feature==chosen_feat) %>%
+  pull(mzmed) %>% message()
+```
+
+## QC
+
+```{r load all the data}
+long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
+MID_df <- read.csv(paste0(output_folder, "MID_df.csv"))
+aov_df <- read.csv(paste0(output_folder, "aov_df.csv"))
+msms_df <- read.csv(paste0(output_folder, "msms_df.csv")) %>% as_tibble()
+```
+
+
+```{r set feature of interest}
+
+ft <- "FT0492"
+# ft <- stan_annotations[stan_annotations$compound_name=="Guanine", "feature"]
+# Set iso and iso_delta manually (M_area = 0, C13=1.003355, X5C13N15=1.003355*5 +0.997035)
+iso <- "M_area"
+iso_delta <- 0
+# iso <- "C13_area"
+# iso_delta <- 1.003355
+# iso <- "C13_area"
+# iso_delta <- 1.003355
+# iso <- "N15X1C13_area"
+# iso_delta <- 1.003355* 1 +0.997035
+# iso <- "N15X5C13_area"
+# iso_delta <- 1.003355* 5 +0.997035
+
+
+ft_df <- long_envelopes[long_envelopes$feature==ft,]
+(mz_i <- mean(ft_df$mz))
+(rt_i <- mean(ft_df$rt)/60)
+```
+
+Chunks below are all used to visualize the peaks in various ways - edit the ft and iso above
+
+```{r plotMID wrt time}
+MID_df %>%
+  # filter(isotope!="M_area") %>%
+  filter(feature==ft) %>%
+  ggplot() +
+  geom_line(aes(x=time, y=MID, color=isotope, group=interaction(tripl, isotope)))
+```
+
+```{r single-feature boxplot raw data}
+MID_df %>%
+  filter(feature==ft) %>%
+  filter(isotope==iso) %>%
+  select(feature, filename, MID, time) %>%
+  ggplot() +
+  geom_boxplot(aes(x=time, y=MID, group=time)) +
+  facet_wrap(~feature, scales = "free_y") +
+  ggtitle(iso)
+```
+
+```{r msdata RaMS plotter singlecompound}
+if(!exists("msdata")){
+  msdata <- grabMSdata(files = paste0(mzxml_path, ms_files), grab_what = "MS1")
+}
+msdata$MS1[mz%between%pmppm(mz_i, 5)] %>%
+  filter(rt%between%(rt_i+c(-1, 1))) %>%
+  left_join(cruise_metadata) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  ggtitle(paste("m/z:", mz_i))
+```
+
+```{r msdata RaMS plotter addisocomp}
+if(!exists("msdata")){
+  msdata <- grabMSdata(files = paste0("mzXMLs/", ms_files), grab_what = "MS1")
+}
+rbind(
+  cbind(msdata$MS1[mz%between%pmppm(mz_i)], type=ft),
+  cbind(msdata$MS1[mz%between%pmppm(mz_i+iso_delta, 5)], type=iso)
+) %>%
+  left_join(cruise_metadata %>% select(-type)) %>%
+  filter(rt%between%(rt_i+c(-1, 1))) %>%
+  ggplot() +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  facet_wrap(~type, ncol=1, scales = "free_y") +
+  ggtitle(paste("m/z:", mz_i))
+```
+
+```{r justplotabunchofchroms}
+ft <- sample(unique(long_envelopes$feature), 1)
+ft_df <- long_envelopes[long_envelopes$feature==ft,]
+(mz_i <- mean(ft_df$mz))
+(rt_i <- mean(ft_df$rt)/60)
+msdata$MS1[mz%between%pmppm(mz_i, 10)] %>%
+  filter(rt%between%(rt_i+c(-1, 1))) %>%
+  left_join(cruise_metadata) %>%
+  ggplot() +
+  # geom_point(aes(x=rt, y=mz)) +
+  geom_line(aes(x=rt, y=int, group=filename, color=factor(time))) +
+  ggtitle(paste("m/z:", mz_i, ft))
+
+```
+
+
+## Write out peakpicking parameters
+
+For supplemental table!
+
+```{r}
+getSlotDf <- function(object){
+  good_slots <- slotNames(object)
+  good_slots <- good_slots[!good_slots%in%c(".__classVersion__", "sampleGroups")]
+  peakpicking_params <- lapply(good_slots, FUN = slot, object=object)
+  param_len <- sapply(peakpicking_params, length)
+  peakpicking_params[param_len==0] <- NA_real_
+  param_len[param_len==0] <- 1
+  good_slots <- rep(good_slots, param_len)
+  duped_slots <- duplicated(good_slots)
+  good_slots[duped_slots] <- paste0(good_slots[duped_slots], " (max)")
+  good_slots[which(duped_slots)-1] <- paste0(good_slots[which(duped_slots)-1], " (min)")
+  
+  data.frame(
+    type=class(object)[1],
+    param=good_slots,
+    value=unlist(peakpicking_params)
+  )
+}
+
+
+param_output <- rbind(
+  getSlotDf(cwp),
+  getSlotDf(fpp),
+  getSlotDf(obp),
+  getSlotDf(pdp),
+  data.frame(type="Custom", param="qscore_threshold", value=qscore_threshold)
+)
+
+write.csv(file = paste0(identifier, "_params_used.csv"), param_output, row.names = FALSE)
+```
+
