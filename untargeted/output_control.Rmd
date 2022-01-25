@@ -242,8 +242,25 @@ Automatically go through and identify standards using retention time ordering in
 ```{r targeted}
 filled_peaks <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
   dplyr::rename(M_area = into)
-given_stans <- read.csv("clean_stans.csv") %>% 
-  filter(polarity==!!polarity)
+
+github_base <- "https://raw.githubusercontent.com/IngallsLabUW/Ingalls_Standards"
+sha_code <- "13eb85cf92ac968a0024c2f922c7b2ba07ecc7b0"
+repo_end <- "Ingalls_Lab_Standards.csv"
+raw_stans <- read.csv(paste(github_base, sha_code, repo_end, sep = "/"))
+given_stans <- raw_stans %>%
+  filter(Column=="HILIC") %>%
+  mutate(polarity=ifelse(str_detect(z, "-"), "neg", "pos")) %>%
+  mutate(mz=as.numeric(mz)) %>%
+  select(compound_type=Compound_Type, compound_name=Compound_Name,
+         compound_name_old=Compound_Name_Original,
+         formula=Empirical_Formula, rt=RT_minute, mz=mz, 
+         ionization_form=Ionization_Form,
+         charge=z, kegg_id=KEGG_Code, polarity, 
+         date_added=Date_Added, mix=HILIC_Mix) %>%
+  mutate(date_added=strptime(x = date_added, format = "%y%m%d")) %>%
+  filter(date_added<=strptime(x = "190715", format = "%y%m%d")) %>%
+  filter(polarity==!!polarity) %>%
+  distinct()
 
 feature_data <- filled_peaks %>%
   group_by(feature) %>%
