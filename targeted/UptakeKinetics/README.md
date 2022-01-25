@@ -5,10 +5,12 @@ This folder contains the code and raw data and example output for the targeted m
 "Quantify_GBT_Aug8_2019.R"
 This script reads in the output from skyline peak integration of TQS runs measuring 5C13, 1N15-GBT and C12, N14-GBT from the kinetics experiments and the associated standard addition curves that were run.
 Using that data it quantifies the two forms of GBT in the samples and then calculates the uptake kinetics using a few methods. 
+
 Inputs:
 1) "GBT Kintetics Gradients 3 Sample List TQS for R code use.csv" Sample list
 2) "QC_output_All_TQS_GBT_IS-GBT.csv" the quality control filtered skyline output
 3) "BiologicNormalizationInformation.csv" the relevant normalization values for the different samples - dilution factor due to dilutions before running and water volume filtered, etc
+
 Outputs:
 1) "All.Standard.Addition.Models.csv" - different models for quantifying GBT. We ran several standard addition curves so the models use various combinations to calculate final GBT concentrations.
 2) "GBT_Concentrations_and_Uptake_Rates_w_StdError.csv" - the best quantified GBT data
