@@ -82,6 +82,9 @@ stan_annotations <- given_stans %>%
   split(.$compound_name) %>%
   pblapply(function(stan_data){
     # dput(stan_data)
+    if(nrow(stan_data)>1){
+      stan_data <- slice(stan_data, 1)
+    }
     possible_stan_features <- feature_data %>%
       filter(mzmed%between%pmppm(as.numeric(stan_data["mz"]), 6)) %>%
       arrange(rtmed)
@@ -114,15 +117,19 @@ stan_annotations <- given_stans %>%
         filter(compound_name==isotopologue|
                  compound_name==gsub("^D", "", isotopologue)|
                  compound_name==gsub("^L", "", isotopologue))
-      isotopo_features <- feature_data %>%
-        filter(mzmed%between%pmppm(as.numeric(isotopo_data$mz), 5))
-      isotope_choice <- possible_stan_features %>% 
-        left_join(isotopo_features, by=character()) %>%
-        select(-starts_with("mzmed")) %>%
-        mutate(rtdiff=abs(rtmed.x-rtmed.y)) %>%
-        arrange(rtdiff) %>%
-        slice(1) %>%
-        pull(feature.x)
+      if(!nrow(isotopo_data)){
+        isotope_choice <- NA
+      } else {
+        isotopo_features <- feature_data %>%
+          filter(mzmed%between%pmppm(as.numeric(isotopo_data$mz), 5))
+        isotope_choice <- possible_stan_features %>% 
+          left_join(isotopo_features, by=character()) %>%
+          select(-starts_with("mzmed")) %>%
+          mutate(rtdiff=abs(rtmed.x-rtmed.y)) %>%
+          arrange(rtdiff) %>%
+          slice(1) %>%
+          pull(feature.x)
+      }
     } else {
       isotope_choice <- NA
     }
