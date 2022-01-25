@@ -25,9 +25,11 @@ Outputs:
 "Monte.Carlo.Uptake.Model.R"
 This script takes the initial uptake rate data as a starting place and does a monte carlo error analysis to determine the uptake kintetics and associated uncertainty
 Note that this takes a long time to run since it generates 1000 models
-It also does the analysis two ways for each experiment - parameterizing dGBT and without parameterizing dGBT
+It also does the analysis two ways for each experiment - parameterizing dGBT and without parameterizing dGBT.
+
 Inputs:
 1) "GBT_Uptake_Rates_w_StdError.csv"  from Script 1
+
 Output:
 1) "GBT Uptake K1 all Monte Carlo Model Resuls.csv" and "GBT Uptake K2 all Monte Carlo Model Resuls.csv"
 2) "GBT Uptake K1 all Monte Carlo Model Resuls no dGBT.csv" and "GBT Uptake K2 all Monte Carlo Model Resuls no dGBT.csv"
@@ -40,9 +42,11 @@ Output:
 turnover time calculation based on the Wright-Hobbie linear transformation
 Plot t/f (incubation time in hour divided by ration of added that was taken up) vs A (added concentration in nM). 
 Fit least squares regression. Then Kt+S = -x intercept and Vmax = 1/slope and turnover time = y-intercept
+
 Inputs:
 1) "GBT_Concentrations_and_Uptake_Rates_w_StdError.csv" from Script 1 above
 2) "K1-MonteCarlo_OutliersRemoved_summary_withError_no_dGBT.csv" and "K2-MonteCarlo_OutliersRemoved_summary_withError_no_dGBT.csv" from script 2 above
+
 Outputs:
 1) "GBT K1 linear transformation all Monte Carlo Model Resuls.csv" and "GBT K2 linear transformation all Monte Carlo Model Resuls.csv" writes out the model and the monte carlo error results for the Wright-Hobbie linear transformation for the two experiments.
 2) "K1-Linear_transformation_MonteCarlo_OutliersRemoved_summary_withError.csv" and "k2-Linear_transformation_MonteCarlo_OutliersRemoved_summary_withError.csv" writes out the model and the monte carlo error results for the Wright-Hobbie linear transformation for the two experiments after removing outliers.
@@ -51,6 +55,7 @@ Outputs:
 ## Script 4
 "Plot.Final.uptake.models.R"
 This generates the plots and tables associated with the GBT uptake kinetics that are in the manuscript.
+
 Inputs:
 1) "GBT_Uptake_Rates_w_StdError.csv"  from script 1
 2) "K1-MonteCarlo_OutliersRemoved_summary_withError_no_dGBT.csv" and "K2-MonteCarlo_OutliersRemoved_summary_withError_no_dGBT.csv" from script 2 above
@@ -60,6 +65,7 @@ Inputs:
 6) "CTD Temperature (2).csv" which is provided in the raw data folder
 7) "CTD Chloropigment.csv" which is provided in the raw data folder
 8) "PCPN.Dat.R" which is provided in the raw data folder
+
 Outputs:
 1) "Uptake-Kinetics-with-rangeOfFit-K1andK2_insets.pdf" which is a plot like the one in the manuscript - figure 2 top pannels
 2) "xtable1.tex" is a latex table similar to that in the manuscript. It has for each station and each kinetics experiment the oceanographic parameters: temperature, chl and the model parameters and error estimates.
