@@ -30,6 +30,7 @@ library(RaMS)
 polarity = "pos" # Either "pos" or "neg"
 identifier = "cyano"   #Either the same as polarity (pos/neg) or "cyano"
 exp.num = 1 # Either 1 or 2
+
 # Create a folder to hold the output
 if(exp.num ==1){ 
   output_folder <- paste0("untargeted/output_folder_", identifier, "/")
@@ -139,14 +140,9 @@ Fill in missing data and deduplicate
     Fill in rt, rtmin, rtmax with the median for the feature
     Fill in mz with the mean for the feature
     
-Use findIsoAdduct to loop over each file/feature/isotope and calculate peak area and peak correlation
-  Set up parallelized with bplapply which eats errors and is generally unhelpful when things go wrong
-  Debug by switching it to pblapply to get the actual errors
+Use findIsoAdduct to loop over each file/feature/isotope and calculate peak area and peak correlation. findIsoAdduct basically works by going back to the raw data and integrating the the isotope peak windows (mz+/-ppm, rt between rtmin and rtmax) as well as the original peak area to be consistent
   
-  findIsoAdduct basically works by going back to the raw data and integrating the the isotope peak windows (mz+/-ppm, rt between rtmin and rtmax) as well as the original peak area to be consistent
-  
-Use isIsoAdduct to do basically the same thing, but it looks in the *other* direction by assuming
-that the compound is an isotope or adduct and then works backwards to check on the original mass
+Use isIsoAdduct to do basically the same thing, but it looks in the *other* direction by assuming that the compound is an isotope or adduct and then works backwards to check on the original mass
 
 ```{r deisoadduct, error=TRUE}
 library(xcms)
@@ -237,7 +233,7 @@ adblock(268.10393, 270.10430, 454.6361/60)
 
 ## Annotate standards
 
-Automatically go through and identify standards using retention time ordering information
+Automatically go through and identify standards using retention time ordering information and other heuristics such as standards mix abundance.
 
 ```{r targeted}
 filled_peaks <- read.csv(paste0(output_folder, "filled_peaks.csv")) %>%
