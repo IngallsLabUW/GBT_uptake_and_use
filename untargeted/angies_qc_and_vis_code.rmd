@@ -3,8 +3,6 @@ title: "Control Script for GBT data"
 output: html_document
 ---
 
-Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = TRUE)
 options(dplyr.summarise.inform=F)
@@ -21,13 +19,16 @@ library(ggrepel)
 polarity <- "pos"
 # identifier <- polarity #Either the same as polarity (pos/neg) or "cyano"
 identifier <- "cyano"
-mzxml_path <- paste0("mzXMLs_", identifier, "/")
+mzxml_path <- paste0("untargeted/mzXMLs_", identifier, "/")
 exp.num = 1 # 1 or 2
-if(exp.num ==2){ output_folder <- paste0("output_folder_", identifier, "/")} else {
-  output_folder <- paste0("output_folder_", identifier,"_","exp",exp.num, "/")}
+if(exp.num == 2){ 
+  output_folder <- paste0("output_folder_", identifier, "/")
+} else {
+  output_folder <- paste0("untargeted/output_folder_", identifier, "/")
+}
 
-source("scripts/functions.R")
-cruise_metadata <- list.files( paste0("mzXMLs_", identifier, "/")) %>%
+source("untargeted/scripts/functions.R")
+cruise_metadata <- list.files( paste0("untargeted/mzXMLs_", identifier, "/")) %>%
   data.frame(filename=.) %>%
   mutate(exp_num=str_extract(filename, "(?<=Fate)\\d(?=M)|Blk|Std")) %>%
   mutate(type=str_extract(filename, "(?<=200605_).*?(?=_)")) %>%
@@ -59,7 +60,6 @@ stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 
 ## MID lm tests ------------
 ```{r lm and ANOVA tests on all isotopologues}
-library(tidyverse)
 library(broom)
 
 if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
@@ -199,10 +199,12 @@ MID_df %>%
 ```{r msdata RaMS plotter singlecompound, eval=FALSE}
 if(!exists("msdata")){
   if(exp.num==2){
-    msdata <- grabMSdata(files = paste0(mzxml_path, ms_files)[c(3,6,9,12,15,18)], grab_what = "MS1")} else{
+      msdata <- grabMSdata(files = paste0(mzxml_path, ms_files)[c(3,6,9,12,15,18)], grab_what = "MS1")
+    } else {
       msdata <- grabMSdata(files = paste0(mzxml_path, ms_files)[c(3,6,9,12,15,18,22)], grab_what = "MS1")
     }
 } 
+
 msdata$MS1[mz%between%pmppm(mz_i, 5)] %>%
   filter(rt%between%((rt_i+c(-1, 1))*60)) %>%
   left_join(cruise_metadata) %>%
@@ -220,14 +222,9 @@ msdata$MS1[mz%between%pmppm(mz_i.2, 5)] %>%
 
 ```
 
-```{r msdata RaMS plotter addisocomp}
+```{r msdata RaMS plotter addisocomp, eval=FALSE}
 if(!exists("msdata")){
-  if(identifier=="pos"){
-    msdata <- grabMSdata(files = paste0("mzXMLs_pos/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")} else if (identifier =="neg"){
-      msdata <- grabMSdata(files = paste0("mzXMLs_neg/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")
-    } else if (identifier=="cyano"){
-      msdata <- grabMSdata(files = paste0("mzXMLs_cyano/", ms_files)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")
-    } else {print("Specify LC colum and MS mode as cyano, pos, or neg")}
+  msdata <- grabMSdata(files = list.files(paste0(mzxml_path), full.names = TRUE)[c(3,4,6,9,10,12,15,16,18,19)], grab_what = "MS1")
 }
 rbind(
   cbind(msdata$MS1[mz%between%pmppm(mz_i)], type=ft),
@@ -279,7 +276,12 @@ good.fts <- lm_anova_good %>%
 
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 
-similar.good.fts.to.keep <- read_csv(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))
+if(file.exists(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))){
+  similar.good.fts.to.keep <- read_csv(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))
+} else {
+  similar.good.fts.to.keep <- cbind(good.fts, keep="y") %>%
+    left_join(stan_annotations)
+}
 
 unique.good.fts <- good.fts %>%
   full_join(similar.good.fts.to.keep, by= "feature")  %>%
@@ -294,15 +296,14 @@ write_csv(unique.good.fts, path = paste0(output_folder,"Check_these_Features.csv
 
 ##  print out pdf to check good features -----
 ```{r print report of unique good features}
-isotope.mass.offsets = read_csv("scripts/isotope_mass_offsets.csv")
+isotope.mass.offsets = read_csv("untargeted/scripts/isotope_mass_offsets.csv")
 pdf(file = paste0(output_folder,"test_CheckThese_Plots.pdf"))
 for(i in 1:nrow(unique.good.fts)){
   this.ft <- unique.good.fts$feature[i]
   ft_df <- long_envelopes[long_envelopes$feature==this.ft,]
   mz_i <- mean(ft_df$mz)
   rt_i <- mean(ft_df$rt)/60
-  these.isotopes = MID.test %>% filter(feature==this.ft,
-                                       sig)
+  these.isotopes = MID.test %>% filter(feature==this.ft, sig)
   p1 <- MID_df %>%
     # filter(isotope!="M_area") %>%
     filter(feature==this.ft,
@@ -396,8 +397,12 @@ write.csv(msms_df, file = paste0(output_folder, "msms_df_curated.csv"), row.name
 if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
 
 ## recalculate MIDs for curated MFs-------
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
-  filter(keep_final == 'y')
+if(file.exists(paste0(output_folder,"Check_these_Features_akb.csv"))){
+  curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+    filter(keep_final == 'y')
+} else {
+  
+}
 MID.test <- read_csv(paste0(output_folder,"test_goodCompounds_MID_lm_significance_test.csv"))  %>%
   mutate(fdr.p.val = p.adjust(p.value, method = "fdr"),
          sig = fdr.p.val< p.val.cutoff)
@@ -1106,7 +1111,7 @@ isotope.key = data.frame(isotope = c("C13_area","M_area","N15_area","N15X1C13_ar
                                       "N15X5C13_area", "X2C13_area","X3C13_area","X4C13_area","X5C13_area"),
                           C.lab = c(1,0,0,1,2,3,4,5,2,3,4,5), 
                           N.lab = c(0,0,1,1,1,1,1,1,0,0,0,0))
-mz.diffs = read_csv("scripts/isotope_mass_offsets.csv")
+mz.diffs = read_csv("untargeted/scripts/isotope_mass_offsets.csv")
 
 ## cyano 2
 temp.polarity <- "pos"
