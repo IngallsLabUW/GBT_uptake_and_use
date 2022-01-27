@@ -5,7 +5,7 @@ output: html_document
 
 This document is meant to be run from within the GBT_uptake_and_use R project to ensure all file paths and working directories are correct. Each section (##) is designed to be standalone by saving the output afterwards, but this setup chunk needs to be run each time R is restarted or the workspace is cleared.
 
-mzXML files should be placed in the corresponding "mzXMLs_pos", "mzXMLs_pos", or
+mzXML files should be placed in the corresponding "mzXMLs_pos", "mzXMLs_neg", or
 "mzXMLs_cyano" sub-folder of the "untargeted" directory, or the setup chunk below should be edited to reflect their new locations.
 
 The following code blocks are intended to be run six separate times, corresponding to the following options and data sources:
@@ -27,11 +27,11 @@ library(pbapply)
 library(RaMS)
 
 # Change the below options
-polarity = "neg" # Either "pos" or "neg"
-identifier = "neg"   #Either the same as polarity (pos/neg) or "cyano"
+polarity = "pos" # Either "pos" or "neg"
+identifier = "cyano"   #Either the same as polarity (pos/neg) or "cyano"
 exp.num = 1 # Either 1 or 2
 # Create a folder to hold the output
-if(exp.num ==2){ 
+if(exp.num ==1){ 
   output_folder <- paste0("untargeted/output_folder_", identifier, "/")
 } else {
   output_folder <- paste0("untargeted/output_folder_", identifier,"_","exp",exp.num, "/")
@@ -628,6 +628,6 @@ param_output <- rbind(
   data.frame(type="Custom", param="qscore_threshold", value=qscore_threshold)
 )
 
-write.csv(file = paste0(identifier, "_params_used.csv"), param_output, row.names = FALSE)
+write.csv(file = paste0("untargeted/", identifier, "_params_used.csv"), param_output, row.names = FALSE)
 ```
 
