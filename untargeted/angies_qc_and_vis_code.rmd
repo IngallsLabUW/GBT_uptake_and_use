@@ -47,8 +47,6 @@ cruise_metadata <- list.files( paste0("untargeted/mzXMLs_", identifier, "/")) %>
 ms_files <- cruise_metadata$filename
 ```
 
-## Angie Additions Below Here: ----------------
-
 ```{r load all the data again}
 long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
 MID_df <- read.csv(paste0(output_folder, "MID_df.csv"))
@@ -56,7 +54,6 @@ aov_df <- read.csv(paste0(output_folder, "aov_df.csv"))
 msms_df <- read.csv(paste0(output_folder, "msms_df.csv")) %>% as_tibble()
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 ```
-
 
 ## MID lm tests ------------
 ```{r lm and ANOVA tests on all isotopologues}
@@ -132,6 +129,8 @@ similar.good.fts <- good.fts %>%
 
 write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
 ```
+
+After the potential_duplicated_good_MFs.csv is created, this file was manually reviewed using the code below and a new column was created with a manual assesment of quality (potential_duplicated_good_MFs_akb.csv) that is used for the following code sections. This file is saved in the manual_data folder.
 
 ```{r visualize those similar MFs}
 ft <- "FT0899"
@@ -251,7 +250,13 @@ rbind(
 
 ## re-filter based on manual curation ---------------
 ```{r refilter}
-if(identifier == "cyano" & exp.num == 1){p.val.cutoff = 0.33} else if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
+if(identifier == "cyano" & exp.num == 1){
+  p.val.cutoff = 0.33
+} else if(identifier == "cyano"){
+  p.val.cutoff = 0.22
+} else {
+  p.val.cutoff = 0.1
+}
 
 
 MID.test <- read_csv(paste0(output_folder, "test_goodCompounds_MID_lm_significance_test.csv"))%>%
@@ -276,12 +281,9 @@ good.fts <- lm_anova_good %>%
 
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 
-if(file.exists(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))){
-  similar.good.fts.to.keep <- read_csv(paste0(output_folder,"potential_duplicated_good_MFs_akb.csv"))
-} else {
-  similar.good.fts.to.keep <- cbind(good.fts, keep="y") %>%
-    left_join(stan_annotations)
-}
+similar.good.fts.to.keep <- read_csv(
+  paste0("untargeted/manual_data/", basename(output_folder),
+         "/potential_duplicated_good_MFs_akb.csv"))
 
 unique.good.fts <- good.fts %>%
   full_join(similar.good.fts.to.keep, by= "feature")  %>%
