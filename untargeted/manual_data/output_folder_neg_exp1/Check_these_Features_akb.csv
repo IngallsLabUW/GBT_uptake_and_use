@@ -1,0 +1,6 @@
+feature,rtmed.x,mzmed.x,keep,compound_name,keep_final,reason
+FT072,145.83325,165.9783083,NA,NA,n,only M_area changes
+FT091,479.56232,184.0853485,NA,NA,n,isotope is just noise
+FT131,699.88293,318.0962153,NA,NA,n,in HILIC pos FT0867
+FT111,734.1095,214.0483078,NA,NA,n,only M_area changes
+FT078,755.42896,171.0057006,NA,NA,n,only M_area changes

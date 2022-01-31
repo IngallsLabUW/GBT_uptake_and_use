@@ -1,0 +1,106 @@
+feature,rtmed.x,mzmed.x,keep,compound_name,keep_final,reason
+FT1759,61.805975,517.3155062,NA,NA,n,data too sparse
+FT0875,63.44437,269.0880681,NA,NA,n,isotope of adenosine?
+FT0868,63.57973,268.1039477,y,Adenosine,n,in HILIC
+FT1062,66.35579,294.1812293,NA,NA,n,data too sparse
+FT0991,67.131055,284.098981,y,Guanosine,y,legit
+FT1027,68.32788,288.1480339,NA,NA,n,data too sparse
+FT1003,68.59537,285.1442941,NA,NA,n,FT0769 in HILIC pos
+FT0886,68.69369,270.1209031,NA,NA,n,only M_area changes
+FT1491,68.819775,383.063488,NA,NA,n,only M_area changes
+FT0288,70.4632,171.1491329,NA,NA,y,legit
+FT0094,71.81082,136.0617912,y,Adenine,n,in HILIC
+FT0779,72.32185,252.1091216,y,Deoxyadenosine,n,in HILIC
+FT0099,75.29907,137.0458298,NA,NA,y,legit - matches exp2 FT0120
+FT1094,78.30832,299.1601836,NA,NA,n,too sparse of data
+FT1090,79.45853,298.1860023,NA,NA,n,only M_area changes
+FT1313,79.50594,338.2536014,NA,NA,n,only M_area changes
+FT1221,81.24142,321.1520427,NA,NA,n,too messy
+FT1033,81.76108,289.0893929,NA,NA,n,looks like an isotope of something else
+FT0069,82.95692,127.0503608,y,Thymine,y,noisey but ok - matches exp2 FT0091
+FT1413,84.2006,359.181417,NA,NA,y,legit
+FT0331,84.82333,178.0723189,NA,NA,n,looks like an isotope of something else
+FT0189,87.85277,153.1022618,NA,NA,n,only M_area changes
+FT0743,89.065075,246.0366605,NA,NA,n,looks like an isotope of something else
+FT0277,89.60355,170.0811696,NA,NA,n,isotopoogue just noise
+FT0219,90.2513,159.0651846,NA,NA,n,just noise for isotopologue
+FT0378,90.26635,186.1488512,NA,NA,n,only M_area changes
+FT0786,90.7994,253.1182938,y,NA,n,data too sparse
+FT0636,90.80792,229.1547666,NA,NA,n,just noise for isotopologue
+FT0279,95.007775,170.1539285,NA,NA,n,only M_area changes
+FT0872,95.01192,268.1754696,NA,NA,n,data too sparse
+FT0034,98.075,114.0915733,NA,NA,y,legit
+FT0817,114.08589,259.0999528,NA,NA,y,messy but ok
+FT0389,117.07474,188.0705698,y,NA,y,legit - matches exp2 FT0446
+FT0335,139.64243,178.1225994,NA,NA,n,too messy
+FT0690,144.60652,237.96031,NA,NA,n,only M_area changes
+FT0856,147.344755,265.154686,NA,NA,n,only M_area changes
+FT0262,156.9155,167.0554075,NA,NA,n,only M_area changes
+FT0328,164.852845,178.0531872,NA,NA,n,only M_area changes
+FT0056,196.39125,123.0442078,NA,NA,n,only M_area changes
+FT1267,207.78578,330.1812057,NA,NA,n,too messy
+FT0703,210.079865,240.0999648,NA,NA,n,only M_area changes
+FT0647,210.21042,231.0232279,NA,NA,n,only M_area changes
+FT1566,218.96524,415.2537071,y,NA,y,messy but ok
+FT1463,219.00046,372.2228633,y,NA,n,isotopoogue just noise
+FT0297,224.44566,173.0808415,NA,NA,n,only M_area changes
+FT0138,236.03824,146.0600325,NA,NA,y,messy but ok
+FT1318,251.87006,340.1966506,y,NA,n,isotopoogue just noise
+FT1907,265.47598,689.3456814,NA,NA,n,only M_area changes
+FT0448,283.83945,197.1172368,y,NA,n,isotopoogue just noise
+FT0425,289.226595,194.030404,NA,NA,n,only M_area changes
+FT1194,300.844175,315.6872209,NA,NA,n,only M_area changes
+FT0894,307.11305,270.206358,NA,NA,n,only M_area changes
+FT0133,308.70505,144.138309,NA,NA,n,isotopoogue just noise
+FT1630,310.136825,441.240545,NA,NA,n,only M_area changes
+FT1304,312.28888,335.7241875,NA,NA,n,only M_area changes
+FT1483,330.650375,379.7505186,NA,NA,n,only M_area changes
+FT1087,348.24637,298.1471026,NA,NA,n,only M_area changes
+FT1225,363.62659,322.1550024,NA,NA,n,only M_area changes
+FT1134,392.94806,305.2223506,NA,NA,n,only M_area changes
+FT0609,400.73026,225.9990624,NA,NA,n,only M_area changes
+FT1584,409.10889,420.2956126,NA,NA,n,only M_area changes
+FT1755,420.49695,514.3224884,NA,NA,n,only M_area changes
+FT0413,421.05054,192.138283,NA,NA,y,a bit messy but ok
+FT1350,429.09613,344.243203,NA,NA,y,messy but ok
+FT1153,439.08014,309.2059611,NA,NA,n,only M_area changes
+FT0848,460.708235,263.1641727,NA,NA,n,only M_area changes
+FT1371,465.21982,348.274356,NA,NA,n,only M_area changes
+FT0965,472.392195,279.1954528,NA,NA,n,only M_area changes
+FT1152,487.49945,309.167217,NA,NA,n,only M_area changes
+FT1301,490.15836,335.2216062,y,NA,y,messy but ok
+FT1478,490.16983,375.2142182,NA,NA,y,messy but ok
+FT1397,493.20743,356.2795022,NA,NA,n,too messy
+FT1288,505.04507,333.2035322,y,NA,n,too messy
+FT1133,508.046435,305.1747232,NA,NA,n,only M_area changes
+FT1528,515.1615,396.2745461,NA,NA,n,only M_area changes
+FT0514,515.16205,207.1378939,NA,NA,n,only M_area changes
+FT1262,520.52966,329.1723002,NA,NA,y,messy but ok
+FT1300,532.99286,335.1828318,NA,NA,n,too messy
+FT1237,535.48169,325.2373444,y,NA,n,only M_area changes
+FT1386,540.19638,352.2482208,NA,NA,n,too messy
+FT1339,549.72281,342.2639191,y,NA,y,messy but ok
+FT1083,549.72302,297.2060412,y,NA,n,too messy
+FT1628,551.22238,440.3008577,NA,NA,n,too messy
+FT1071,551.50806,295.1904001,NA,NA,n,only M_area changes
+FT1291,557.46866,333.206011,NA,NA,n,only M_area changes
+FT1223,559.83557,321.2424902,y,NA,n,too messy
+FT1422,559.83801,361.2348643,y,NA,n,too messy
+FT1494,568.1676,384.3108735,NA,NA,n,only M_area changes
+FT1565,573.5697,415.2113607,NA,NA,n,isotope changes in the wrong direction
+FT1302,579.47296,335.2216879,NA,NA,n,only M_area changes
+FT1459,580.01898,371.2428626,NA,NA,n,only M_area changes
+FT1057,586.01221,293.2110426,y,NA,y,messy but ok
+FT1289,586.01651,333.2035608,y,NA,y,messy but ok
+FT1387,586.583435,352.2481884,NA,NA,n,only M_area changes
+FT1072,597.32385,295.1904395,NA,NA,n,too messy
+FT0881,605.07629,269.2110995,NA,NA,y,messy but ok
+FT1236,611.05118,325.2373195,NA,NA,n,too messy
+FT1290,620.60297,333.2059997,NA,NA,n,too messy
+FT1112,624.78638,301.2162144,NA,NA,n,too messy
+FT0247,638.48981,163.0753252,NA,NA,y,legit
+FT1693,643.8233,475.2974615,NA,NA,y,legit
+FT1309,717.33331,337.2349056,NA,NA,n,changes wrong direaction
+FT1619,784.90186,436.3423614,NA,NA,y,messy but ok
+FT1892,907.42285,679.4311128,NA,NA,n,too messy
+FT1923,915.33026,750.4072784,NA,NA,n,too messy

@@ -1,0 +1,128 @@
+feature,rtmed.x,mzmed.x,keep,compound_name,keep_final,reason
+FT731,113.82451,287.1487574,NA,NA,n,"tiny peak, change due to noise"
+FT489,118.854155,214.0896048,NA,NA,y,ok peak in both M and C13
+FT481,120.47883,211.1692933,NA,NA,n,unrealistic MIDs
+FT498,123.175925,217.1070698,NA,NA,n,isotope peak with sig change is just noise
+FT879,124.47918,416.2489755,NA,NA,n,change due to noise
+FT505,126.969235,220.1331824,NA,NA,n,change due to noise
+FT551,133.38882,234.1488029,NA,NA,n,peak doesn't match isotope that changes (look for an MZ with 236.14)
+FT396,137.19411,185.1729371,NA,NA,n,isotope peak with sig change is just noise
+FT064,158.58536,114.0915961,NA,NA,y,noisy but real change at latter timepoints
+FT101,194.377945,123.0554803,NA,NA,n,isotope peak with sig change is just noise
+FT289,219.5132,166.0611291,NA,NA,n,isotope peak with sig change is just noise
+FT020,227.17422,87.05581226,NA,NA,n,isotope peak with sig change is just noise
+FT177,235.073505,139.0502123,NA,NA,n,isotope peak with sig change is just noise
+FT230,244.61961,152.0566796,NA,NA,n,only change in M
+FT083,246.73726,120.0558364,NA,NA,n,only change in M
+FT105,251.74264,124.0394682,NA,NA,y,messy but ok peaks
+FT632,264.266435,252.1090461,y,Deoxyadenosine,y,messy but ok peaks
+FT160,264.45952,136.0617959,y,Adenine,y,messy but ok peaks
+FT934,320.274535,518.0848136,NA,NA,n,"only change in M, seems like maybe an adduct of something else?"
+FT674,321.038575,268.1039315,NA,NA,y,legit
+FT683,321.74127,270.1042973,y,NA,n,"N15X1C13 isotope of FT674, but clearly there are more 2N15 to look for"
+FT159,330.66911,136.0617865,y,NA,y,legit
+FT861,331.04861,386.0423169,y,NA,n,only change in M
+FT321,350.51558,174.0219753,NA,NA,y,noisy but maybe ok
+FT440,366.462385,196.0829037,NA,NA,y,noisy but maybe ok
+FT174,374.713335,138.0548416,NA,NA,y,noisy but maybe ok
+FT450,402.42831,198.0985819,NA,NA,n,isotope peak with sig change is just noise
+FT163,403.84549,137.0458379,NA,NA,y,noisy but maybe ok
+FT507,409.42883,221.084213,NA,NA,y,integration might be an issue? Noisy but looks ok
+FT224,437.91237,150.0774725,NA,NA,n,noisy
+FT196,444.162,144.1019328,NA,NA,y,integration might be an issue? Noisy but looks ok. Should check on X3C13
+FT058,446.689575,112.0508243,NA,NA,y,looks good: cytosine?
+FT118,448.00133,128.0761482,NA,NA,n,bad MID
+FT135,451.459765,132.1019781,NA,NA,y,looks ok but I'm not sure it really changes. C13 is in the noise
+FT142,451.94646,133.1053439,NA,NA,n,isotope of FT135
+FT008,454.636125,76.0763109,NA,NA,y,TMNO?
+FT262,460.89432,160.0968351,NA,NA,n,weird MID. Probably an adduct of something else
+FT077,478.65134,118.0864181,y,Glycine betaine,y,GBT
+FT164,483.90712,137.0458095,NA,NA,n,issues with gbt stealing all the MS time
+FT463,493.01537,204.1231337,NA,NA,n,issues with gbt stealing all the MS time
+FT264,498.446015,160.0968363,NA,NA,n,weird MID. Probably an adduct of something else
+FT586,503.449645,242.1499184,NA,NA,n,weird MID. Probably an adduct of something else
+FT173,511.145725,138.0549495,NA,NA,y,legit; homarine?
+FT057,514.847585,112.0508479,NA,NA,y,looks good: cytosine?
+FT228,524.93028,152.0566389,y,Guanine,y,Guanine
+FT380,525.84149,182.0785114,NA,NA,n,probably an adduct of guanine
+FT193,527.197235,143.0815285,NA,NA,y,noisy but maybe ok
+FT336,529.08511,176.1281244,NA,NA,y,noisy but maybe ok
+FT053,532.040285,109.0813865,NA,NA,n,all noise. Base peak looks like an isotope of something else
+FT092,535.76283,121.0319442,y,Dimethylsulfonioacetate,y,DMS-ac
+FT277,536.32678,162.1124284,y,NA,y,noisy but maybe ok
+FT176,537.230835,139.0502033,NA,NA,n,noisy
+FT250,538.263485,158.0811824,NA,NA,y,noisy but maybe ok
+FT204,547.12623,146.117534,NA,NA,n,trend goes wrong direction
+FT263,547.725585,160.0967977,y,NA,n,isotope is just noise
+FT555,552.482025,236.1491172,NA,NA,y,legit
+FT406,560.36285,190.1073425,NA,NA,n,noisy
+FT291,561.303055,166.0862345,NA,NA,y,noisy but maybe ok
+FT366,562.90573,180.1018492,NA,NA,y,legit
+FT340,567.160495,177.0434523,NA,NA,n,bad peak
+FT530,568.18826,228.1342696,NA,NA,n,isotope is just noise
+FT600,570.58826,246.0971593,NA,NA,y,noisy but ok
+FT069,575.25055,116.0708208,NA,NA,y,no obvious MID change though
+FT243,575.87768,155.0814598,NA,NA,y,legit
+FT240,583.815885,154.0723181,NA,NA,n,just noise
+FT197,586.414425,145.0607725,NA,NA,y,noisy but ok
+FT646,593.33911,255.1073658,NA,NA,n,messy
+FT271,598.45862,161.0920603,NA,NA,n,messy
+FT429,605.034395,194.0926289,NA,NA,n,isotope is just noise
+FT134,605.83621,132.1019518,y,beta-Alaninebetaine,y,beta-alnaninebetaine
+FT877,606.495165,416.1775214,y,NA,n,isotope is just noise
+FT624,610.32495,250.1285211,NA,NA,n,messy
+FT325,611.25009,174.1488504,NA,NA,n,likely an isotopologue of/adduct of FT292
+FT292,611.98709,166.0862563,NA,NA,y,messy but ok peaks
+FT154,618.23563,135.0473805,NA,NA,y,legit
+FT002,618.792085,63.02698877,y,NA,n,too similar to FT154
+FT300,619.364015,168.1262336,y,NA,n,definintely an isotopologue of something else -  probably N15x5C13 of FT276
+FT358,621.34424,179.0735595,y,Gonyol,y,gonyol
+FT276,622.50009,162.1124447,NA,NA,y,legit. Carnitine?
+FT121,624.626435,129.0659622,y,NA,y,ok
+FT274,624.82071,162.0760891,y,NA,n,isotope is just noise
+FT203,629.257825,146.117537,NA,NA,y,legit; acetylcholine?
+FT788,629.586825,317.0693167,NA,NA,n,isotope is just noise
+FT266,631.016395,160.1332134,NA,NA,y,messy but ok peaks
+FT504,632.969455,220.117966,y,NA,n,isotope is just noise
+FT807,633.033325,329.1342714,y,NA,y,legit
+FT112,635.60138,126.0220658,NA,NA,y,extremely similar peak shape to FT807
+FT361,637.74106,179.0954211,NA,NA,n,"an isotopologue of something else, clearly, probably a N15X2C13 isotope of FT332"
+FT031,638.6969,94.06248803,NA,NA,n,"looks like an isotopologue of somethinge else, maybe somehow FT554?"
+FT126,639.638705,130.0863662,NA,NA,n,extremely similar peak shape to FT332
+FT554,641.069085,236.1491679,NA,NA,y,legit
+FT575,642.04315,239.1590915,NA,NA,n,isotopologue of FT554
+FT833,644.2333,348.1479898,NA,NA,n,"looks like an isotopologue or adduct of something else, maybe FT830"
+FT436,644.5047,195.0764857,y,NA,n,peak ok but isotopes are just noise
+FT332,644.833745,176.0917346,y,NA,y,legit
+FT259,645.212765,159.0764451,y,5-Hydroxyectoine,n,peak ok but isotopes are just noise
+FT219,648.47784,149.0630891,NA,NA,y,messy but ok
+FT830,653.418975,347.1448662,NA,NA,y,legit
+FT669,658.40656,266.1597495,NA,NA,y,messy but peaks ok
+FT337,662.83479,176.1281286,NA,NA,y,messy but peaks ok
+FT418,666.14609,193.0529371,NA,NA,y,"legit, similar to FT830 minus a Proline and a glycine, these are probably peptides"
+FT413,667.247465,192.123014,NA,NA,y,messy but ok
+FT328,669.069115,175.1077426,y,NA,y,GBT-gly?
+FT028,676.032255,90.05545819,NA,NA,y,messy but ok
+FT633,678.416905,252.1440444,NA,NA,y,legit
+FT470,683.30786,209.0478546,NA,NA,y,legit
+FT359,684.12393,179.0735814,NA,NA,y,legit
+FT596,684.67962,245.1131784,y,NA,y,legit
+FT245,685.19443,156.0768103,y,L-Histidine,y,super noisy
+FT133,685.36362,132.0768193,y,Creatine,y,noisy but ok
+FT046,700.528745,104.107341,y,NA,y,choline? Integration might be off
+FT206,700.74692,147.0763739,y,L-Glutamine,y,Glutamine
+FT652,703.679805,258.110097,NA,NA,y,legit; glycerophosphocholine
+FT814,706.13699,333.1291296,NA,NA,y,legit
+FT297,707.62671,168.0437058,NA,NA,y,legit
+FT832,722.92542,348.0703565,NA,NA,n,isotope is just noise
+FT050,725.258575,106.0502261,NA,NA,n,isotope is just noise
+FT210,731.990905,148.060372,y,Glutamic acid and beta glutamic acid,y,Glutamic acid
+FT044,732.014555,104.0709676,y,4-Aminobutyric acid,y,aminobutyric acid
+FT412,732.266725,192.0243066,y,NA,n,"noisy, related to FT210"
+FT631,732.266725,252.0828913,y,NA,n,"noisy, related to FT210"
+FT043,732.36383,102.0553507,y,NA,n,"noisy, related to FT210"
+FT212,734.477725,148.0750631,NA,NA,n,"just noise, related to FT210"
+FT734,737.08502,291.0287654,NA,NA,n,"just noise, related to FT210"
+FT391,769.742555,184.0734166,NA,NA,y,messy but ok. Phosphocholine?
+FT047,794.230585,104.1073573,NA,NA,y,choline? Integration might be off
+FT330,1125.72455,175.118982,NA,NA,y,arginine?
