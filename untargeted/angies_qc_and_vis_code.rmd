@@ -350,7 +350,7 @@ dev.off()
 
 ## read in curated list, get MSMS -------------
 ```{r curated msms getter}
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),"/Check_these_Features_akb.csv")) %>%
   filter(keep_final == 'y')
 
 msmsdata <- grabMSdata(list.files(mzxml_path, pattern = "DDA", full.names = TRUE))
@@ -399,8 +399,8 @@ write.csv(msms_df, file = paste0(output_folder, "msms_df_curated.csv"), row.name
 if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
 
 ## recalculate MIDs for curated MFs-------
-if(file.exists(paste0(output_folder,"Check_these_Features_akb.csv"))){
-  curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+if(file.exists(paste0("untargeted/manual_data/", basename(output_folder),          "/potential_duplicated_good_MFs_akb.csv"))){
+  curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),          "/potential_duplicated_good_MFs_akb.csv")) %>%
     filter(keep_final == 'y')
 } else {
   
@@ -539,6 +539,9 @@ write_csv(MID_trimmer, path = paste0(output_folder,"Tidy_MID_df.csv"))
 
 
 ## dereplicate based on RT
+
+The chunk below also produces output that must be manually annotated. Adding the "keep" column here with "y" for keep and "n" for remove and saving the file in manual_data with the suffix _akb will allow the rest of the code to run smoothly, or you can edit the file paths.
+
 ```{r dereplicated based on RT}
 if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
 
@@ -572,7 +575,7 @@ similar.good.fts <- good.fts %>%
   left_join(stan_annotations %>%
               dplyr::select(feature, compound_name))
 
-# write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
+write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
 ```
 
 ## re-do stats on MIDs now that they are cleaned up
@@ -583,7 +586,7 @@ if(identifier == "cyano"){p.val.cutoff = 0.22} else {p.val.cutoff = 0.1}
 library(tidyverse)
 library(broom)
 
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),          "/potential_duplicated_good_MFs_akb.csv")) %>%
   filter(keep_final == 'y')
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
@@ -632,7 +635,7 @@ ggplot(lm_anova_good) + geom_point(aes(x=Rsqr, y = fdr.p.val))
 ```{r trends are real table maker}
 long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv"))  %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),          "/potential_duplicated_good_MFs_akb.csv"))  %>%
   filter(keep_final == 'y')
 MID.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv"))
 MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
@@ -726,8 +729,8 @@ write_csv(final.good.MFs.table.condensed, paste0(output_folder,"Significant_tren
 
 ## get curated list of isotopologues and make a suite of heatmaps
 ```{r currated heatmaps}
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
-  filter(keep_final == 'y')
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),          "/potential_duplicated_good_MFs_akb.csv")) %>%
+  filter(keep == 'y')
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
 MID_sig.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv")) %>%
@@ -1059,7 +1062,7 @@ This should have: Identifier (column, ionization, MF number), mz, rt, name if kn
 long_envelopes <- read.csv(paste0(output_folder, "long_envelopes.csv"))
 MID.test <- read_csv(paste0(output_folder, "trimmed_goodCompounds_MID_lm_significance_test.csv"))
 MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),"/potential_duplicated_good_MFs_akb.csv")) %>%
   filter(keep_final == 'y')
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 msms_df.trim = read.csv(paste0(output_folder,"msms_df_curated.csv"))
@@ -1363,7 +1366,7 @@ write_csv(combined.MIDs, "Combined.Untargeted.Significant.MF.MIDs.csv")
 
 ## create a supplemental figure that has 15N1X13C2 isotopes
 ```{r newSuppFig_N15X3C13, echo = F, message=F, warning=F}
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),"/potential_duplicated_good_MFs_akb.csv")) %>%
   filter(keep_final == 'y')
 stan_annotations <- read.csv(paste0("output_folder_pos/", "stan_annotations.csv"))
 MID_df <- read_csv(paste0("output_folder_pos/", "Tidy_MID_df.csv"))
@@ -1643,7 +1646,7 @@ heatmap.2(t(data_mat_iso.new),  Rowv = F, scale="none",
 
 ## create a supplemental figure that has 15N1X13C5 isotopes
 ```{r newSuppFig, echo = F, message=F, warning=F}
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),"/potential_duplicated_good_MFs_akb.csv")) %>%
   filter(keep_final == 'y')
 stan_annotations <- read.csv(paste0("output_folder_pos/", "stan_annotations.csv"))
 MID_df <- read_csv(paste0("output_folder_pos/", "Tidy_MID_df.csv"))
@@ -1884,7 +1887,7 @@ ms_masses <- c(188.0685, 261.1212, 316.1271, 244.1059, 317.1111,
                288.1321, 332.1219, 344.1583, 346.1376, 302.1478, 
                245.0899, 328.127,  284.1374)+1.007276
 nice_masses <- c(316.1271, 244.1059, 288.1321, 332.1219, 346.1376, 302.1478, 284.1374, 328.127, 245.0899)+1.007276
-curated.MFs <- read_csv(paste0(output_folder,"Check_these_Features_akb.csv")) %>%
+curated.MFs <- read_csv(paste0("untargeted/manual_data/", basename(output_folder),"/potential_duplicated_good_MFs_akb.csv")) %>%
   filter(keep_final == 'y')
 stan_annotations <- read.csv(paste0(output_folder, "stan_annotations.csv"))
 MID_df <- read_csv(paste0(output_folder, "Tidy_MID_df.csv"))
