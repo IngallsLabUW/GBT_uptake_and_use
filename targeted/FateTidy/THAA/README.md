@@ -3,6 +3,7 @@ Total Hydrolyzable Amino Acid (THAA) data processing for Glycine Betaine Fate Ex
 
 ## Script 1:
 "THAA.quantification.Step1.R"
+
 This script uses raw peak areas from skyline on the unlabled amino acids that were run at the same time as standard additions so that we can quantify the concentration in the various samples
 The input is:
 "StandardCurvePeakAreaData.csv" which is the necessary peak area data from skyline and
@@ -14,6 +15,7 @@ the output is:
 
 ## Script 2:
 "THAA.1.QC.and.MID.Calc.R"
+
 This reads in the possible isotopologues (stored in: "RawData/THAA_Isotope_possibilities.csv") 
 and the Skyline report (stored in: "RawData/GBT_Fate_THAA_Isotopes_skyline_report.csv")
 
@@ -32,9 +34,13 @@ The outputs of this section are
 
 ## Script 3:
 "Plot.THAA.conc.T0.TLong.R"
+
 This makes several plots that compare individual THAAs and total THAA concentrations for the initial and final time points in both experiments.
 This includes "THAA_total_C.pdf" which is Supplemental Figure 7 in the manuscript.
-Inputs: "Quantified_THAA_inSeaWater.csv" generated in script 1, "AA_Molecular_Formulas.csv" which just has a parsed molecular formula for each amino acid
+
+Inputs:
+1) "Quantified_THAA_inSeaWater.csv" generated in script 1
+2) "AA_Molecular_Formulas.csv" which just has a parsed molecular formula for each amino acid
 
 
 
