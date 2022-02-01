@@ -44,7 +44,11 @@ The pipeline is managed by the `output_control.Rmd` script in this subdirectory,
 
 Final repo structure after complete analysis:
   - targeted
-    - Coming soon!
+    - FateTidy
+      - Cloned from github
+    - UptakeKinetics
+      - Cloned from github
+
   - untargeted
     - mzXMLs_pos
       - Created manually by extracting Metabolomics Workbench zipped file ST002008_HILIC_QE_HF_Orbitrap_POS.zip
