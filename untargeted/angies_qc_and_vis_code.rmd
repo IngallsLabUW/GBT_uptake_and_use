@@ -1,5 +1,5 @@
 ---
-title: "Control Script for GBT data"
+title: "Quality Control and Figures for GBT Untargeted data"
 output: html_document
 ---
 
@@ -130,7 +130,7 @@ similar.good.fts <- good.fts %>%
 write_csv(similar.good.fts,path = paste0(output_folder,"potential_duplicated_good_MFs.csv"))
 ```
 
-After the potential_duplicated_good_MFs.csv is created, this file was manually reviewed using the code below and a new column was created with a manual assesment of quality (potential_duplicated_good_MFs_akb.csv) that is used for the following code sections. This file is saved in the manual_data folder.
+After the potential_duplicated_good_MFs.csv is created, this file was manually reviewed using the code below and a new column was created with a manual assesment of quality (potential_duplicated_good_MFs_akb.csv) that is used for the following code sections. This file is saved in the manual_data folder. We recommend independent users manually generate that file themselves. Users can use the following code chucks to inspect and compare specific mass features.
 
 ```{r visualize those similar MFs}
 ft <- "FT0899"
@@ -971,6 +971,7 @@ clusts.X1N15X5C13 <- read_csv(paste0(output_folder,"clustering_and_heatmaps/",
 ```
 
 ## plot msms
+individual mass features here can be changed to specify those of interest 
 ```{r plot msms}
 source("MSMS.plotter.R")
 msms_df = read_csv(paste0(output_folder, "msms_df_curated.csv"))

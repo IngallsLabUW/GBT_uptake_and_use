@@ -40,7 +40,10 @@ The untargeted subdirectory contains a pipeline that accepts as input the mzXML 
 
 The script expects to find the mzXML files in three separate directories of the untargeted folder, named "mzXMLs_cyano", "mzXMLs_neg", and "mzXMLs_pos", respectively. Zipped directories downloaded from Metabolomics Workbench can be extracted directly into the "untargeted" folder, which should automatically create the folders with the correct file names.
 
-The pipeline is managed by the `output_control.Rmd` script in this subdirectory, which has several sections of code that must be changed to perform the full analysis. These sections are marked out in the Rmarkdown document (not yet). To run the full analysis, both positive and negative mode HILIC mzXMLs and positive-mode RP mzXMLs should be downloaded into the mzXMLs_pos, mzXMLs_neg, and mzXMLs_cyano folders, respectively. Then, modify the script to point to the correct subset (pos/neg/cyano), polarity (pos/neg), and experiment number (1 for northern experiment, 2 for the southern). The "output_folder_*" directories contain useful debugging and intermediate objects from the xcms and custom code process. After the complete pipeline output is produced, figures and statistics for the manuscript can be produced by running the `qc_and_vis.Rmd` Rmarkdown.
+The pipeline is managed by the `output_control.Rmd` script in this subdirectory, which has several sections of code that must be changed to perform the full analysis. These sections are marked out in the Rmarkdown document (not yet). To run the full analysis, both positive and negative mode HILIC mzXMLs and positive-mode RP mzXMLs should be downloaded into the mzXMLs_pos, mzXMLs_neg, and mzXMLs_cyano folders, respectively. 
+Then, modify the script to point to the correct subset (pos/neg/cyano), polarity (pos/neg), and experiment number (1 for northern experiment, 2 for the southern). 
+The "output_folder_*" directories contain useful debugging and intermediate objects from the xcms and custom code process. 
+After the complete pipeline output is produced, figures and statistics for the manuscript can be produced by running the `qc_and_vis.Rmd` Rmarkdown.
 
 Final repo structure after complete analysis:
   - targeted
